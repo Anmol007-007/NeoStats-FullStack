@@ -23,10 +23,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
   const fetchCurrentUser = async () => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('taskflow_token') : null;
+    if (!token) {
+      setUser(null);
+      setIsLoading(false);
+      return;
+    }
     try {
       const res = await api.auth.getMe();
       setUser(res.data);
     } catch {
+      localStorage.removeItem('taskflow_token');
       setUser(null);
     } finally {
       setIsLoading(false);
