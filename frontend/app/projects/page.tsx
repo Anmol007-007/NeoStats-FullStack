@@ -41,14 +41,14 @@ export default function ProjectsPage() {
   const [statusFilter, setStatusFilter] = useState<'ALL' | ProjectStatus>('ALL');
   const [page, setPage] = useState(1);
 
-  // New Project modal state
+  
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [newProjectName, setNewProjectName] = useState('');
   const [newProjectDesc, setNewProjectDesc] = useState('');
   const [newProjectPmId, setNewProjectPmId] = useState('');
   const [formError, setFormError] = useState('');
 
-  // Fetch projects
+  
   const {
     data: projectsData,
     isLoading,
@@ -66,7 +66,7 @@ export default function ProjectsPage() {
     },
   });
 
-  // Fetch PM candidates for the initial PM selector (Admin only)
+  
   const { data: pmUsers } = useQuery({
     queryKey: ['users', { role: 'PROJECT_MANAGER', isActive: true }],
     queryFn: async () => {
@@ -81,7 +81,7 @@ export default function ProjectsPage() {
     enabled: user?.role === 'ADMIN' && isCreateOpen,
   });
 
-  // Create project mutation
+  
   const createMutation = useMutation({
     mutationFn: async () => {
       if (!newProjectName.trim()) {
@@ -112,7 +112,7 @@ export default function ProjectsPage() {
 
   const [projectToDelete, setProjectToDelete] = useState<{ id: string; name: string } | null>(null);
 
-  // Delete project mutation
+  
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       return api.projects.delete(id);
@@ -131,7 +131,7 @@ export default function ProjectsPage() {
   return (
     <AppLayout>
       <div className="space-y-6">
-        {/* Header and Controls */}
+        
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-slate-900">
@@ -156,9 +156,9 @@ export default function ProjectsPage() {
           )}
         </div>
 
-        {/* Filters bar */}
+        
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white p-3 rounded-xl border border-slate-200/80 shadow-xs">
-          {/* Status Tabs */}
+          
           <div className="flex items-center gap-1.5 w-full sm:w-auto">
             {(['ALL', 'ACTIVE', 'ARCHIVED'] as const).map((status) => (
               <button
@@ -178,7 +178,7 @@ export default function ProjectsPage() {
             ))}
           </div>
 
-          {/* Search box */}
+          
           <div className="relative w-full sm:w-72">
             <Search className="h-4 w-4 absolute left-3 top-2.5 text-slate-400" />
             <input
@@ -194,7 +194,7 @@ export default function ProjectsPage() {
           </div>
         </div>
 
-        {/* Project Grid */}
+        
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {Array.from({ length: 6 }).map((_, idx) => (
@@ -310,7 +310,7 @@ export default function ProjectsPage() {
           </div>
         )}
 
-        {/* Pagination controls */}
+        
         {projectsData?.meta && projectsData.meta.totalPages > 1 && (
           <div className="flex items-center justify-between pt-4 border-t border-slate-200">
             <span className="text-xs text-slate-500">
@@ -337,7 +337,7 @@ export default function ProjectsPage() {
           </div>
         )}
 
-        {/* Create Project Modal (Admin Only) */}
+        
         <Modal
           isOpen={isCreateOpen}
           onClose={() => setIsCreateOpen(false)}
@@ -407,7 +407,7 @@ export default function ProjectsPage() {
           </form>
         </Modal>
 
-        {/* Delete Confirmation Dialog */}
+        
         <ConfirmDialog
           isOpen={!!projectToDelete}
           onClose={() => setProjectToDelete(null)}

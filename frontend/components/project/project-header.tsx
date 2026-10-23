@@ -34,7 +34,7 @@ export function ProjectHeader({ project }: ProjectHeaderProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  // Modals state
+  
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editName, setEditName] = useState(project.name);
   const [editDesc, setEditDesc] = useState(project.description || '');
@@ -43,7 +43,7 @@ export function ProjectHeader({ project }: ProjectHeaderProps) {
   const [isUnarchiveConfirmOpen, setIsUnarchiveConfirmOpen] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
 
-  // Edit mutation
+  
   const editMutation = useMutation({
     mutationFn: () =>
       api.projects.update(project.id, {
@@ -61,7 +61,7 @@ export function ProjectHeader({ project }: ProjectHeaderProps) {
     },
   });
 
-  // Archive mutation
+  
   const archiveMutation = useMutation({
     mutationFn: () => api.projects.archive(project.id),
     onSuccess: () => {
@@ -75,7 +75,7 @@ export function ProjectHeader({ project }: ProjectHeaderProps) {
     },
   });
 
-  // Unarchive mutation
+  
   const unarchiveMutation = useMutation({
     mutationFn: () => api.projects.unarchive(project.id),
     onSuccess: () => {
@@ -89,7 +89,7 @@ export function ProjectHeader({ project }: ProjectHeaderProps) {
     },
   });
 
-  // Delete mutation
+  
   const deleteMutation = useMutation({
     mutationFn: () => api.projects.delete(project.id),
     onSuccess: () => {
@@ -126,7 +126,7 @@ export function ProjectHeader({ project }: ProjectHeaderProps) {
 
   return (
     <div className="space-y-4">
-      {/* Top Banner if Archived */}
+      
       {project.status === 'ARCHIVED' && (
         <div className="p-3 bg-amber-50 border border-amber-200 text-amber-800 rounded-xl text-xs flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -150,7 +150,7 @@ export function ProjectHeader({ project }: ProjectHeaderProps) {
         </div>
       )}
 
-      {/* Main Header Info and Actions */}
+      
       <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1.5">
@@ -185,7 +185,7 @@ export function ProjectHeader({ project }: ProjectHeaderProps) {
             )}
           </div>
 
-          {/* Action buttons (gated by permissions object from API!) */}
+          
           <div className="flex items-center gap-2 flex-wrap">
             {project.permissions.canEdit && (
               <Button
@@ -236,7 +236,7 @@ export function ProjectHeader({ project }: ProjectHeaderProps) {
           </div>
         </div>
 
-        {/* Tabs Bar */}
+        
         <div className="flex items-center gap-2 mt-6 pt-4 border-t border-slate-100">
           {tabs.map((tab) => {
             const Icon = tab.icon;
@@ -262,7 +262,7 @@ export function ProjectHeader({ project }: ProjectHeaderProps) {
         </div>
       </div>
 
-      {/* Edit Project Modal */}
+      
       <Modal
         isOpen={isEditOpen}
         onClose={() => setIsEditOpen(false)}
@@ -308,7 +308,7 @@ export function ProjectHeader({ project }: ProjectHeaderProps) {
         </form>
       </Modal>
 
-      {/* Archive Confirmation */}
+      
       <ConfirmDialog
         isOpen={isArchiveConfirmOpen}
         onClose={() => setIsArchiveConfirmOpen(false)}
@@ -319,7 +319,7 @@ export function ProjectHeader({ project }: ProjectHeaderProps) {
         isLoading={archiveMutation.isPending}
       />
 
-      {/* Unarchive Confirmation */}
+      
       <ConfirmDialog
         isOpen={isUnarchiveConfirmOpen}
         onClose={() => setIsUnarchiveConfirmOpen(false)}
@@ -331,7 +331,7 @@ export function ProjectHeader({ project }: ProjectHeaderProps) {
         isLoading={unarchiveMutation.isPending}
       />
 
-      {/* Delete Confirmation */}
+      
       <ConfirmDialog
         isOpen={isDeleteConfirmOpen}
         onClose={() => setIsDeleteConfirmOpen(false)}

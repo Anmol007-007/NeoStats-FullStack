@@ -82,7 +82,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.removeItem('taskflow_token');
       await api.auth.logout();
     } catch {
-      // Even if logout endpoint fails, clear state
+      
     } finally {
       localStorage.removeItem('taskflow_token');
       setUser(null);

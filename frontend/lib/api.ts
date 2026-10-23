@@ -132,10 +132,10 @@ export async function apiRequest<T>(
   return data as T;
 }
 
-// ----------------- Production API Endpoints -----------------
+
 
 export const api = {
-  // Auth
+  
   auth: {
     login: async (credentials: { email: string; password: string }) => {
       return apiRequest<ApiDataResponse<User> & { token?: string }>('/auth/login', {
@@ -169,7 +169,7 @@ export const api = {
     },
   },
 
-  // Users (Admin)
+  
   users: {
     list: async (params?: {
       page?: number;
@@ -220,7 +220,7 @@ export const api = {
     },
   },
 
-  // Projects
+  
   projects: {
     list: async (params?: {
       page?: number;
@@ -264,7 +264,7 @@ export const api = {
     },
   },
 
-  // Members
+  
   members: {
     list: async (projectId: string) => {
       return apiRequest<ApiDataResponse<Member[]>>(`/projects/${projectId}/members`);
@@ -301,7 +301,7 @@ export const api = {
     },
   },
 
-  // Tasks
+  
   tasks: {
     list: async (
       projectId: string,
@@ -371,7 +371,7 @@ export const api = {
     },
   },
 
-  // Comments
+  
   comments: {
     list: async (
       taskId: string,
@@ -390,7 +390,7 @@ export const api = {
     },
   },
 
-  // Dashboard
+  
   dashboard: {
     get: async () => {
       return apiRequest<ApiDataResponse<DashboardData>>('/dashboard');

@@ -60,7 +60,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-radial from-slate-100 via-slate-50 to-teal-50/30 p-4">
       <div className="w-full max-w-md space-y-6">
-        {/* Brand header */}
+        
         <div className="text-center space-y-2">
           <div className="inline-flex h-12 w-12 rounded-2xl bg-teal-600 items-center justify-center text-white shadow-lg shadow-teal-600/30 mb-2">
             <Layers className="h-6 w-6" />
@@ -75,10 +75,10 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* Form card */}
+        
         <Card className="border border-slate-200/90 shadow-xl shadow-slate-200/50 backdrop-blur-md">
           <CardContent className="pt-6">
-            {/* Mode Switcher Tabs */}
+            
             <div className="flex bg-slate-100 p-1 rounded-xl mb-5 border border-slate-200/80">
               <button
                 type="button"

@@ -8,7 +8,7 @@ const RAW_URI =
   process.env.MONGODB_URI ||
   'mongodb+srv://aids23anmolsoni_db_user:7QlJdlhPLInSZgoc@fullstack.tlfwh2o.mongodb.net';
 
-// Extract cluster base URI without any database name or query
+
 function getClusterBaseUri(uri: string): string {
   const match = uri.match(/^(mongodb(?:\+srv)?:\/\/[^/?#]+)/i);
   return match ? match[1] : uri.split('?')[0].replace(/\/+$/, '');
@@ -18,7 +18,7 @@ const CLUSTER_BASE_URI = getClusterBaseUri(RAW_URI);
 
 console.log(`[Database] Initializing multi-database connections to cluster: ${CLUSTER_BASE_URI}`);
 
-// Separate Database Connections for Users, Projects, Tasks AND pm_platform primary database
+
 export const usersDb: Connection = mongoose.createConnection(
   `${CLUSTER_BASE_URI}/users_db?retryWrites=true&w=majority`
 );
@@ -45,7 +45,7 @@ projectsDb.on('error', (err) => console.error('[Database: Projects] Error:', err
 tasksDb.on('error', (err) => console.error('[Database: Tasks] Error:', err));
 pmPlatformDb.on('error', (err) => console.error('[Database: Main] Error:', err));
 
-// Real-time mirror functions to keep pm_platform and individual databases in 100% sync
+
 export async function mirrorSave(collectionName: string, doc: any) {
   try {
     const raw = doc && typeof doc.toObject === 'function' ? doc.toObject() : doc;
@@ -89,7 +89,7 @@ export async function waitForDbConnections(): Promise<void> {
   ]);
   console.log('[Database] All databases (users_db, projects_db, tasks_db, and pm_platform) connected successfully.');
 
-  // Startup Sync: ensure all user accounts exist in both users_db and pm_platform
+  
   try {
     const usersInUsersDb = await usersDb.collection('users').find({}).toArray();
     for (const u of usersInUsersDb) {

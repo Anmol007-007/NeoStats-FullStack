@@ -13,7 +13,7 @@ import * as policy from '../permissions/policy.js';
 const router = Router();
 router.use(requireAuth);
 
-// GET /tasks/:id/comments
+
 router.get(
   '/tasks/:id/comments',
   validate({
@@ -75,7 +75,7 @@ router.get(
   }
 );
 
-// POST /tasks/:id/comments
+
 router.post(
   '/tasks/:id/comments',
   validate({
@@ -134,7 +134,7 @@ router.post(
   }
 );
 
-// DELETE /comments/:id
+
 router.delete('/comments/:id', async (req, res, next) => {
   try {
     const actor = req.user!;

@@ -11,10 +11,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 1000 * 30, // 30 seconds
+            staleTime: 1000 * 30, 
             refetchOnWindowFocus: false,
             retry: (failureCount, error: any) => {
-              // Don't retry on 401, 403, 404, or 409
+              
               if (
                 error?.status === 401 ||
                 error?.status === 403 ||

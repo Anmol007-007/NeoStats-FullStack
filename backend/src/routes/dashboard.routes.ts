@@ -7,7 +7,7 @@ import { requireAuth } from '../middleware/auth.js';
 const router = Router();
 router.use(requireAuth);
 
-// GET /dashboard
+
 router.get('/', async (req, res, next) => {
   try {
     const actor = req.user!;
@@ -35,7 +35,7 @@ router.get('/', async (req, res, next) => {
       (t) => t.status !== 'DONE' && t.dueDate && t.dueDate < todayStr
     ).length;
 
-    // My Open Tasks (max 5)
+    
     const myOpenTasks = await Task.find({
       assigneeId: actor.id,
       status: { $ne: 'DONE' },
@@ -43,7 +43,7 @@ router.get('/', async (req, res, next) => {
       .sort({ dueDate: 1, updatedAt: -1 })
       .limit(5);
 
-    // Recent Projects (max 5)
+    
     const recentProjects = await Project.find({ _id: { $in: projectIds } })
       .sort({ updatedAt: -1 })
       .limit(5);

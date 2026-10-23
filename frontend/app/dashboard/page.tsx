@@ -52,7 +52,7 @@ export default function DashboardPage() {
   return (
     <AppLayout>
       <div className="space-y-8">
-        {/* Welcome Banner */}
+        
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-slate-900">
@@ -80,9 +80,9 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Metric Cards */}
+        
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Total Projects */}
+          
           <Card className="hover:border-slate-300 transition-all">
             <CardContent className="p-5 flex items-center justify-between">
               <div>
@@ -106,7 +106,7 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          {/* Open Tasks */}
+          
           <Card className="hover:border-slate-300 transition-all">
             <CardContent className="p-5 flex items-center justify-between">
               <div>
@@ -130,7 +130,7 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          {/* Completed Tasks */}
+          
           <Card className="hover:border-slate-300 transition-all">
             <CardContent className="p-5 flex items-center justify-between">
               <div>
@@ -154,7 +154,7 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          {/* Overdue Tasks */}
+          
           <Card className="hover:border-slate-300 transition-all">
             <CardContent className="p-5 flex items-center justify-between">
               <div>
@@ -179,7 +179,7 @@ export default function DashboardPage() {
           </Card>
         </div>
 
-        {/* Task Status Distribution */}
+        
         {dashboardData?.tasksByStatus && (
           <Card>
             <CardHeader>
@@ -219,9 +219,9 @@ export default function DashboardPage() {
           </Card>
         )}
 
-        {/* Two-column layout: My Open Tasks & Recent Projects */}
+        
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* My Open Tasks */}
+          
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-3">
               <div>
@@ -288,7 +288,7 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          {/* Recent Projects */}
+          
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-3">
               <div>

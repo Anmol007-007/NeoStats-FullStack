@@ -30,7 +30,7 @@ export function errorHandler(
     });
   }
 
-  // Handle Mongoose duplicate key error (E11000)
+  
   if (err.code === 11000) {
     const isEmail = err.message && err.message.includes('email');
     return res.status(409).json({
@@ -41,7 +41,7 @@ export function errorHandler(
     });
   }
 
-  // Log server errors internally without leaking stack traces
+  
   console.error('[Internal Error]:', err);
 
   return res.status(500).json({

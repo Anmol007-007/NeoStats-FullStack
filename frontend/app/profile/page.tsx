@@ -14,11 +14,11 @@ import { toast } from 'sonner';
 export default function ProfilePage() {
   const { user, refetchUser, logout } = useAuth();
 
-  // Name Update State
+  
   const [name, setName] = useState(user?.name || '');
   const [isUpdatingName, setIsUpdatingName] = useState(false);
 
-  // Password Change State
+  
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -80,7 +80,7 @@ export default function ProfilePage() {
           </p>
         </div>
 
-        {/* Profile Info Overview Card */}
+        
         <Card className="border border-slate-200 shadow-xs">
           <CardContent className="p-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -121,7 +121,7 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
 
-        {/* Update Name Form */}
+        
         <Card className="border border-slate-200 shadow-xs">
           <CardHeader className="border-b border-slate-100 pb-3">
             <CardTitle className="text-sm">Personal Information</CardTitle>
@@ -155,7 +155,7 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
 
-        {/* Change Password Form */}
+        
         <Card className="border border-slate-200 shadow-xs">
           <CardHeader className="border-b border-slate-100 pb-3">
             <CardTitle className="text-sm">Security & Password</CardTitle>

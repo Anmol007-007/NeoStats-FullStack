@@ -14,7 +14,7 @@ import { mirrorDelete, mirrorDeleteMany } from '../db/connections.js';
 const router = Router();
 router.use(requireAuth);
 
-// Helper to compute project permissions
+
 function getProjectPermissions(actor: any, project: any, membershipRole: any) {
   const isArchived = project.status === 'ARCHIVED';
   const isCreator = project.createdById?.toString() === actor.id;
@@ -30,7 +30,7 @@ function getProjectPermissions(actor: any, project: any, membershipRole: any) {
   };
 }
 
-// GET /projects
+
 router.get(
   '/',
   validate({
@@ -48,7 +48,7 @@ router.get(
 
       let projectIdsFilter: any = null;
 
-      // Scoping: Admin sees all; other roles only see projects they belong to
+      
       if (actor.role !== 'ADMIN') {
         const memberships = await ProjectMember.find({ userId: actor.id });
         projectIdsFilter = memberships.map((m) => m.projectId);
@@ -72,7 +72,7 @@ router.get(
         .skip((page - 1) * pageSize)
         .limit(pageSize);
 
-      // Load counts and roles for each project
+      
       const items = await Promise.all(
         projects.map(async (p) => {
           const memberCount = await ProjectMember.countDocuments({ projectId: p._id });
@@ -115,7 +115,7 @@ router.get(
   }
 );
 
-// POST /projects (Admin only)
+
 router.post(
   '/',
   validate({
@@ -148,7 +148,7 @@ router.post(
         createdById: actor.id,
       });
 
-      // Automatically add creator as PROJECT_MANAGER so they immediately own and see their project
+      
       if (actor.role !== 'ADMIN') {
         await ProjectMember.create({
           projectId: project._id,
@@ -193,7 +193,7 @@ router.post(
   }
 );
 
-// GET /projects/:id
+
 router.get('/:id', async (req, res, next) => {
   try {
     const actor = req.user!;
@@ -234,7 +234,7 @@ router.get('/:id', async (req, res, next) => {
   }
 });
 
-// PATCH /projects/:id
+
 router.patch(
   '/:id',
   validate({
@@ -291,7 +291,7 @@ router.patch(
   }
 );
 
-// POST /projects/:id/archive
+
 router.post('/:id/archive', async (req, res, next) => {
   try {
     const actor = req.user!;
@@ -335,7 +335,7 @@ router.post('/:id/archive', async (req, res, next) => {
   }
 });
 
-// POST /projects/:id/unarchive
+
 router.post('/:id/unarchive', async (req, res, next) => {
   try {
     const actor = req.user!;
@@ -379,7 +379,7 @@ router.post('/:id/unarchive', async (req, res, next) => {
   }
 });
 
-// DELETE /projects/:id (Admin, Project Manager, or Creator, cascades members, tasks, comments)
+
 router.delete('/:id', async (req, res, next) => {
   try {
     const actor = req.user!;
@@ -401,7 +401,7 @@ router.delete('/:id', async (req, res, next) => {
       );
     }
 
-    // Cascade deletion per BR-10
+    
     const tasks = await Task.find({ projectId: project._id });
     const taskIds = tasks.map((t) => t._id);
 
@@ -410,7 +410,7 @@ router.delete('/:id', async (req, res, next) => {
     await ProjectMember.deleteMany({ projectId: project._id });
     await Project.findByIdAndDelete(project._id);
 
-    // Mirror deletions to pm_platform
+    
     await mirrorDeleteMany('comments', { taskId: { $in: taskIds } });
     await mirrorDeleteMany('tasks', { projectId: project._id });
     await mirrorDeleteMany('projectmembers', { projectId: project._id });

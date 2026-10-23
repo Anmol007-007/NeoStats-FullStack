@@ -12,7 +12,7 @@ import * as policy from '../permissions/policy.js';
 const router = Router();
 router.use(requireAuth);
 
-// GET /projects/:id/members
+
 router.get('/:id/members', async (req, res, next) => {
   try {
     const actor = req.user!;
@@ -28,7 +28,7 @@ router.get('/:id/members', async (req, res, next) => {
       .populate({ path: 'userId', model: User });
 
     const data = memberships
-      .filter((m) => m.userId) // filter deleted or dangling
+      .filter((m) => m.userId) 
       .map((m: any) => ({
         userId: m.userId._id.toString(),
         name: m.userId.name,
@@ -44,7 +44,7 @@ router.get('/:id/members', async (req, res, next) => {
   }
 });
 
-// GET /projects/:id/member-candidates
+
 router.get(
   '/:id/member-candidates',
   validate({
@@ -75,7 +75,7 @@ router.get(
       const filter: any = {
         _id: { $nin: memberUserIds },
         isActive: true,
-        role: { $ne: 'ADMIN' }, // Admins are not added as project members (BR-4)
+        role: { $ne: 'ADMIN' }, 
       };
 
       const q = req.query.q as string | undefined;
@@ -94,7 +94,7 @@ router.get(
   }
 );
 
-// POST /projects/:id/members
+
 router.post(
   '/:id/members',
   validate({
@@ -124,7 +124,7 @@ router.post(
         throw new AppError(403, 'FORBIDDEN', 'Permission denied');
       }
 
-      // BR-5: Only Admin may grant or change PROJECT_MANAGER
+      
       if (req.body.role === 'PROJECT_MANAGER' && !policy.canManageProjectManagers(actor, false)) {
         throw new AppError(403, 'FORBIDDEN', 'Only Admins can assign Project Managers');
       }
@@ -134,12 +134,12 @@ router.post(
         throw new AppError(400, 'INVALID_MEMBER', 'Target user is invalid or deactivated');
       }
 
-      // BR-4: Admins cannot be added as members (they have implicit access)
+      
       if (targetUser.role === 'ADMIN') {
         throw new AppError(400, 'INVALID_MEMBER', 'Administrators have implicit access and cannot be added as project members');
       }
 
-      // BR-4: Role hierarchy checks
+      
       if (targetUser.role === 'VIEWER' && req.body.role !== 'VIEWER') {
         throw new AppError(400, 'INVALID_ROLE', 'A user with global role VIEWER can only hold the VIEWER project role');
       }
@@ -177,7 +177,7 @@ router.post(
   }
 );
 
-// PATCH /projects/:id/members/:userId
+
 router.patch(
   '/:id/members/:userId',
   validate({
@@ -211,7 +211,7 @@ router.patch(
         throw new AppError(404, 'NOT_FOUND', 'Project membership not found');
       }
 
-      // BR-5: PM cannot grant, revoke or change PROJECT_MANAGER
+      
       if (
         (membership.role === 'PROJECT_MANAGER' || req.body.role === 'PROJECT_MANAGER') &&
         !policy.canManageProjectManagers(actor, false)
@@ -239,7 +239,7 @@ router.patch(
   }
 );
 
-// DELETE /projects/:id/members/:userId (unassigns member's tasks in this project per BR-8)
+
 router.delete('/:id/members/:userId', async (req, res, next) => {
   try {
     const actor = req.user!;
@@ -263,12 +263,12 @@ router.delete('/:id/members/:userId', async (req, res, next) => {
     });
     if (!membership) throw new AppError(404, 'NOT_FOUND', 'Membership not found');
 
-    // BR-5: Only Admin can remove a Project Manager
+    
     if (membership.role === 'PROJECT_MANAGER' && !policy.canManageProjectManagers(actor, false)) {
       throw new AppError(403, 'FORBIDDEN', 'Only Admins can remove Project Managers');
     }
 
-    // BR-8: Removing a member unassigns their tasks in this project
+    
     await Task.updateMany(
       { projectId: project._id, assigneeId: req.params.userId },
       { assigneeId: null }

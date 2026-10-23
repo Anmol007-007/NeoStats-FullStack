@@ -12,12 +12,12 @@ export function Header() {
   const pathname = usePathname();
   const { user } = useAuth();
 
-  // Generate breadcrumb items from pathname
+  
   const segments = pathname.split('/').filter(Boolean);
 
   return (
     <header className="h-16 border-b border-slate-200/80 bg-white/95 backdrop-blur-md sticky top-0 z-30 flex items-center justify-between px-6 shadow-2xs">
-      {/* Breadcrumbs */}
+      
       <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
         <Link href="/dashboard" className="hover:text-slate-900 transition-colors">
           Home
@@ -48,7 +48,7 @@ export function Header() {
         })}
       </div>
 
-      {/* Right controls */}
+      
       <div className="flex items-center gap-3">
         {user && (
           <div className="flex items-center gap-2.5">

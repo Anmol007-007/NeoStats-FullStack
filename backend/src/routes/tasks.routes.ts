@@ -14,7 +14,7 @@ import { mirrorDelete, mirrorDeleteMany } from '../db/connections.js';
 const router = Router();
 router.use(requireAuth);
 
-// Helper to convert Task doc to DTO with permissions
+
 async function toTaskDto(taskDoc: any, actor: any, membershipRole: any) {
   const project = await Project.findById(taskDoc.projectId);
   const isArchived = project?.status === 'ARCHIVED';
@@ -60,7 +60,7 @@ async function toTaskDto(taskDoc: any, actor: any, membershipRole: any) {
   };
 }
 
-// GET /projects/:id/tasks
+
 router.get(
   '/projects/:id/tasks',
   validate({
@@ -131,7 +131,7 @@ router.get(
   }
 );
 
-// GET /tasks (Scoped cross-project tasks for "My Tasks" and dashboard)
+
 router.get(
   '/tasks',
   validate({
@@ -185,7 +185,7 @@ router.get(
   }
 );
 
-// POST /projects/:id/tasks
+
 router.post(
   '/projects/:id/tasks',
   validate({
@@ -223,7 +223,7 @@ router.post(
 
       const { title, description, status, priority, assigneeId, dueDate } = req.body;
 
-      // BR-7: Assignee must be an active member with role PROJECT_MANAGER or TEAM_MEMBER
+      
       if (assigneeId) {
         const membership = await ProjectMember.findOne({
           projectId: project._id,
@@ -262,7 +262,7 @@ router.post(
   }
 );
 
-// GET /tasks/:id
+
 router.get('/tasks/:id', async (req, res, next) => {
   try {
     const actor = req.user!;
@@ -287,7 +287,7 @@ router.get('/tasks/:id', async (req, res, next) => {
   }
 });
 
-// PATCH /tasks/:id — OPTIMISTIC CONCURRENCY CONTROL (VERSION LOCKING)
+
 router.patch(
   '/tasks/:id',
   validate({
@@ -325,7 +325,7 @@ router.patch(
 
       const taskAssigneeId = task.assigneeId ? task.assigneeId.toString() : null;
 
-      // Permission checks
+      
       if (req.body.assigneeId !== undefined && !policy.canAssignTask(actor, false, membershipRole)) {
         throw new AppError(403, 'FORBIDDEN', 'Team Members cannot reassign tasks');
       }
@@ -339,7 +339,7 @@ router.patch(
         throw new AppError(403, 'FORBIDDEN', 'You do not have permission to change the status of this task');
       }
 
-      // BR-7 Check if assignee is valid
+      
       if (req.body.assigneeId) {
         const membership = await ProjectMember.findOne({
           projectId: project._id,
@@ -356,8 +356,7 @@ router.patch(
 
       const { version, ...fieldsToUpdate } = req.body;
 
-      // ATOMIC OPTIMISTIC LOCKING UPDATE
-      // The update only succeeds if the document's version in the database strictly matches the version sent by the client.
+      
       const updated = await Task.findOneAndUpdate(
         { _id: task._id, version },
         { ...fieldsToUpdate, $inc: { version: 1 } },
@@ -367,7 +366,7 @@ router.patch(
         .populate({ path: 'createdById', model: User });
 
       if (!updated) {
-        // Someone else updated this task in the meantime!
+        
         const latestDoc = await Task.findById(task._id)
           .populate({ path: 'assigneeId', model: User })
           .populate({ path: 'createdById', model: User });
@@ -391,7 +390,7 @@ router.patch(
   }
 );
 
-// DELETE /tasks/:id
+
 router.delete('/tasks/:id', async (req, res, next) => {
   try {
     const actor = req.user!;
@@ -418,11 +417,11 @@ router.delete('/tasks/:id', async (req, res, next) => {
       throw new AppError(403, 'FORBIDDEN', 'Only Admins and Project Managers can delete tasks');
     }
 
-    // Cascade delete comments per BR-10
+    
     await Comment.deleteMany({ taskId: task._id });
     await Task.findByIdAndDelete(task._id);
 
-    // Mirror to pm_platform
+    
     await mirrorDeleteMany('comments', { taskId: task._id });
     await mirrorDelete('tasks', task._id);
 

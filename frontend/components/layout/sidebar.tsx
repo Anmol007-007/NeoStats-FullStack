@@ -61,7 +61,7 @@ export function Sidebar() {
   return (
     <aside className="w-64 border-r border-slate-200/80 bg-white flex flex-col justify-between h-screen sticky top-0 select-none shadow-xs">
       <div>
-        {/* Brand */}
+        
         <div className="h-16 flex items-center gap-3 px-6 border-b border-slate-100">
           <div className="h-9 w-9 rounded-xl bg-teal-600 flex items-center justify-center text-white shadow-sm shadow-teal-500/20">
             <Layers className="h-5 w-5" />
@@ -79,7 +79,7 @@ export function Sidebar() {
           </div>
         </div>
 
-        {/* Current User Quick Info */}
+        
         {user && (
           <div className="mx-4 my-4 p-3 rounded-xl bg-slate-50 border border-slate-200/60 flex items-center justify-between">
             <div className="flex items-center gap-2.5 min-w-0">
@@ -106,7 +106,7 @@ export function Sidebar() {
           </div>
         )}
 
-        {/* Navigation Links */}
+        
         <nav className="px-3 space-y-1">
           {navigation.map((item) => {
             const Icon = item.icon;
@@ -141,7 +141,7 @@ export function Sidebar() {
         </nav>
       </div>
 
-      {/* Footer / Logout */}
+      
       <div className="p-4 border-t border-slate-100 space-y-2">
         <button
           onClick={() => logout()}

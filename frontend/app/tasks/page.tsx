@@ -50,7 +50,7 @@ export default function MyTasksPage() {
           </p>
         </div>
 
-        {/* Filter Tabs */}
+        
         <div className="flex items-center gap-1.5 bg-white p-2.5 rounded-xl border border-slate-200/80 shadow-xs w-fit">
           <div className="flex items-center gap-1 text-slate-400 mr-2 text-xs font-medium pl-1">
             <Filter className="h-3.5 w-3.5" />
@@ -78,7 +78,7 @@ export default function MyTasksPage() {
           )}
         </div>
 
-        {/* Tasks List */}
+        
         <div className="bg-white rounded-xl border border-slate-200/80 shadow-xs overflow-hidden">
           {isLoading ? (
             <div className="p-4 space-y-3">
@@ -157,7 +157,7 @@ export default function MyTasksPage() {
             </div>
           )}
 
-          {/* Pagination */}
+          
           {tasksData?.meta && tasksData.meta.totalPages > 1 && (
             <div className="flex items-center justify-between p-3.5 border-t border-slate-100 bg-slate-50/50">
               <span className="text-xs text-slate-500">

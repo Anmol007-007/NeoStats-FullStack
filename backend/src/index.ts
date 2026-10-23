@@ -23,7 +23,7 @@ const MONGODB_URI =
   'mongodb+srv://aids23anmolsoni_db_user:7QlJdlhPLInSZgoc@fullstack.tlfwh2o.mongodb.net/pm_platform?retryWrites=true&w=majority';
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 
-// Global Middleware
+
 app.use(
   cors({
     origin: [FRONTEND_URL, 'http://localhost:3000', 'http://127.0.0.1:3000'],
@@ -33,7 +33,7 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
-// Request Logger
+
 app.use((req, res, next) => {
   const start = Date.now();
   res.on('finish', () => {
@@ -43,12 +43,12 @@ app.use((req, res, next) => {
   next();
 });
 
-// Health Check
+
 app.get('/health', (_req, res) => {
   res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// API Routes
+
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/projects', projectRoutes);
@@ -59,10 +59,10 @@ app.use('/api/v1/dashboard', dashboardRoutes);
 
 import { waitForDbConnections } from './db/connections.js';
 
-// Centralized Error Handler (must be last)
+
 app.use(errorHandler);
 
-// Connect to MongoDB and start server
+
 async function startServer() {
   try {
     console.log('[Database] Connecting to MongoDB Atlas multi-databases...');

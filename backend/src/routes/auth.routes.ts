@@ -11,7 +11,7 @@ import { mirrorSave } from '../db/connections.js';
 const router = Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecret_jwt_key_taskflow_9876543210';
 
-// POST /auth/login
+
 router.post(
   '/login',
   validate({
@@ -34,7 +34,7 @@ router.post(
         throw new AppError(401, 'INVALID_CREDENTIALS', 'Invalid email or password');
       }
 
-      // BR-2: Only after valid credentials, check active status
+      
       if (!user.isActive) {
         throw new AppError(
           403,
@@ -63,7 +63,7 @@ router.post(
   }
 );
 
-// POST /auth/signup (and /auth/register)
+
 router.post(
   ['/signup', '/register'],
   validate({
@@ -113,13 +113,13 @@ router.post(
   }
 );
 
-// POST /auth/logout
+
 router.post('/logout', (_req, res) => {
   res.clearCookie('token');
   return res.status(204).send();
 });
 
-// GET /auth/me
+
 router.get('/me', requireAuth, async (req, res, next) => {
   try {
     const user = await User.findById(req.user!.id);
@@ -130,7 +130,7 @@ router.get('/me', requireAuth, async (req, res, next) => {
   }
 });
 
-// PATCH /auth/me
+
 router.patch(
   '/me',
   requireAuth,
@@ -154,7 +154,7 @@ router.patch(
   }
 );
 
-// POST /auth/change-password
+
 router.post(
   '/change-password',
   requireAuth,

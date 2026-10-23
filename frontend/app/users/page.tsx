@@ -33,13 +33,13 @@ export default function UsersManagementPage() {
   const { user: currentUser } = useAuth();
   const queryClient = useQueryClient();
 
-  // Filters
+  
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('ALL');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [page, setPage] = useState(1);
 
-  // Create Modal State
+  
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [newName, setNewName] = useState('');
   const [newEmail, setNewEmail] = useState('');
@@ -47,7 +47,7 @@ export default function UsersManagementPage() {
   const [newRole, setNewRole] = useState<GlobalRole>('TEAM_MEMBER');
   const [createError, setCreateError] = useState('');
 
-  // Edit Modal State
+  
   const [userToEdit, setUserToEdit] = useState<User | null>(null);
   const [editName, setEditName] = useState('');
   const [editEmail, setEditEmail] = useState('');
@@ -55,13 +55,13 @@ export default function UsersManagementPage() {
   const [editPassword, setEditPassword] = useState('');
   const [editError, setEditError] = useState('');
 
-  // Deactivate/Activate Confirm State
+  
   const [userToToggleStatus, setUserToToggleStatus] = useState<User | null>(null);
 
-  // Check admin access
+  
   const isAdmin = currentUser?.role === 'ADMIN';
 
-  // Fetch users list
+  
   const {
     data: usersData,
     isLoading,
@@ -98,7 +98,7 @@ export default function UsersManagementPage() {
     enabled: isAdmin,
   });
 
-  // Create User Mutation
+  
   const createMutation = useMutation({
     mutationFn: () =>
       api.users.create({
@@ -124,7 +124,7 @@ export default function UsersManagementPage() {
     },
   });
 
-  // Edit User Mutation
+  
   const editMutation = useMutation({
     mutationFn: () => {
       if (!userToEdit) throw new Error('No user selected');
@@ -148,7 +148,7 @@ export default function UsersManagementPage() {
     },
   });
 
-  // Toggle Active Status Mutation
+  
   const toggleStatusMutation = useMutation({
     mutationFn: async (u: User) => {
       if (u.isActive) {
@@ -186,7 +186,7 @@ export default function UsersManagementPage() {
   return (
     <AppLayout>
       <div className="space-y-6">
-        {/* Header and Add button */}
+        
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-slate-900">
@@ -207,7 +207,7 @@ export default function UsersManagementPage() {
           </Button>
         </div>
 
-        {/* Filter Bar */}
+        
         <div className="bg-white p-3.5 rounded-xl border border-slate-200/80 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="relative w-full sm:w-80">
             <Search className="h-4 w-4 absolute left-3 top-2.5 text-slate-400" />
@@ -254,7 +254,7 @@ export default function UsersManagementPage() {
           </div>
         </div>
 
-        {/* Users Table */}
+        
         <div className="bg-white rounded-xl border border-slate-200/80 shadow-xs overflow-hidden">
           {isLoading ? (
             <div className="p-4 space-y-3">
@@ -289,7 +289,7 @@ export default function UsersManagementPage() {
                     key={u.id}
                     className="grid grid-cols-12 px-4 py-3.5 items-center hover:bg-slate-50/50 transition-colors text-xs"
                   >
-                    {/* User info */}
+                    
                     <div className="col-span-4 flex items-center gap-2.5 pr-2">
                       <div className="h-8 w-8 rounded-full bg-slate-800 text-white font-bold text-xs flex items-center justify-center shrink-0">
                         {u.name.slice(0, 2).toUpperCase()}
@@ -311,7 +311,7 @@ export default function UsersManagementPage() {
                       </div>
                     </div>
 
-                    {/* Role badge */}
+                    
                     <div className="col-span-3">
                       <span
                         className={`text-[10px] px-2 py-0.5 rounded-full border ${getRoleBadgeStyle(
@@ -322,7 +322,7 @@ export default function UsersManagementPage() {
                       </span>
                     </div>
 
-                    {/* Status badge */}
+                    
                     <div className="col-span-2">
                       {u.isActive ? (
                         <span className="text-[10px] px-2 py-0.5 rounded-full border bg-emerald-50 text-emerald-700 border-emerald-200 font-medium">
@@ -335,7 +335,7 @@ export default function UsersManagementPage() {
                       )}
                     </div>
 
-                    {/* Actions */}
+                    
                     <div className="col-span-3 flex items-center justify-end gap-1.5">
                       <Button
                         variant="outline"
@@ -354,7 +354,7 @@ export default function UsersManagementPage() {
                         Edit
                       </Button>
 
-                      {/* Deactivate/Activate button (Cannot toggle self per BR-3) */}
+                      
                       {!isSelf && (
                         <Button
                           variant={u.isActive ? 'outline' : 'secondary'}
@@ -382,7 +382,7 @@ export default function UsersManagementPage() {
             </div>
           )}
 
-          {/* Pagination */}
+          
           {usersData?.meta && usersData.meta.totalPages > 1 && (
             <div className="flex items-center justify-between p-3.5 border-t border-slate-100 bg-slate-50/50">
               <span className="text-xs text-slate-500">
@@ -410,7 +410,7 @@ export default function UsersManagementPage() {
           )}
         </div>
 
-        {/* Create User Modal */}
+        
         <Modal
           isOpen={isCreateOpen}
           onClose={() => setIsCreateOpen(false)}
@@ -488,7 +488,7 @@ export default function UsersManagementPage() {
           </form>
         </Modal>
 
-        {/* Edit User Modal */}
+        
         <Modal
           isOpen={!!userToEdit}
           onClose={() => setUserToEdit(null)}
@@ -568,7 +568,7 @@ export default function UsersManagementPage() {
           </form>
         </Modal>
 
-        {/* Toggle Deactivation Confirmation Dialog */}
+        
         <ConfirmDialog
           isOpen={!!userToToggleStatus}
           onClose={() => setUserToToggleStatus(null)}

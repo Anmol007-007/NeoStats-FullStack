@@ -45,7 +45,7 @@ export default function TaskDetailPage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  // Form State
+  
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [status, setStatus] = useState<TaskStatus>('TODO');
@@ -54,20 +54,20 @@ export default function TaskDetailPage() {
   const [dueDate, setDueDate] = useState<string>('');
   const [currentVersion, setCurrentVersion] = useState<number>(1);
 
-  // New Comment State
+  
   const [commentBody, setCommentBody] = useState('');
 
-  // Conflict Dialog State
+  
   const [isConflictOpen, setIsConflictOpen] = useState(false);
   const [conflictServerTask, setConflictServerTask] = useState<Task | null>(null);
 
-  // Delete Task Confirm State
+  
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
-  // Comment Delete Confirm State
+  
   const [commentToDelete, setCommentToDelete] = useState<string | null>(null);
 
-  // Fetch Task Detail
+  
   const {
     data: task,
     isLoading: isTaskLoading,
@@ -80,7 +80,7 @@ export default function TaskDetailPage() {
     },
   });
 
-  // Fetch Project Members (for assignee selector)
+  
   const { data: members } = useQuery({
     queryKey: ['members', task?.projectId],
     queryFn: async () => {
@@ -91,7 +91,7 @@ export default function TaskDetailPage() {
     enabled: !!task?.projectId,
   });
 
-  // Fetch Comments
+  
   const { data: commentsData, isLoading: isCommentsLoading } = useQuery({
     queryKey: ['comments', taskId],
     queryFn: async () => {
@@ -100,7 +100,7 @@ export default function TaskDetailPage() {
     },
   });
 
-  // Initialize form when task is loaded
+  
   useEffect(() => {
     if (task) {
       setTitle(task.title);
@@ -113,7 +113,7 @@ export default function TaskDetailPage() {
     }
   }, [task]);
 
-  // Update Task Mutation with Optimistic Locking Check
+  
   const updateMutation = useMutation({
     mutationFn: async (overrideVersion?: number) => {
       const ver = overrideVersion !== undefined ? overrideVersion : currentVersion;
@@ -149,7 +149,7 @@ export default function TaskDetailPage() {
     },
   });
 
-  // Conflict Resolution: Load Latest (discard local draft)
+  
   const handleLoadLatest = (latestTask: Task) => {
     setTitle(latestTask.title);
     setDescription(latestTask.description || '');
@@ -163,13 +163,13 @@ export default function TaskDetailPage() {
     toast.info(`Loaded latest version v${latestTask.version}`);
   };
 
-  // Conflict Resolution: Re-apply user's draft on top of latest version
+  
   const handleReapplyChanges = (latestTask: Task) => {
     setCurrentVersion(latestTask.version);
     updateMutation.mutate(latestTask.version);
   };
 
-  // Delete Task Mutation
+  
   const deleteMutation = useMutation({
     mutationFn: () => api.tasks.delete(taskId),
     onSuccess: () => {
@@ -187,7 +187,7 @@ export default function TaskDetailPage() {
     },
   });
 
-  // Add Comment Mutation
+  
   const addCommentMutation = useMutation({
     mutationFn: (bodyText: string) => api.comments.create(taskId, { body: bodyText }),
     onSuccess: () => {
@@ -200,7 +200,7 @@ export default function TaskDetailPage() {
     },
   });
 
-  // Delete Comment Mutation
+  
   const deleteCommentMutation = useMutation({
     mutationFn: (commentId: string) => api.comments.delete(commentId),
     onSuccess: () => {
@@ -252,7 +252,7 @@ export default function TaskDetailPage() {
   return (
     <AppLayout>
       <div className="max-w-4xl mx-auto space-y-6">
-        {/* Navigation Breadcrumb Back */}
+        
         <div className="flex items-center justify-between">
           <Link
             href={`/projects/${task.projectId}/tasks`}
@@ -280,7 +280,7 @@ export default function TaskDetailPage() {
           </div>
         </div>
 
-        {/* Task Form Card */}
+        
         <Card className="border border-slate-200 shadow-sm">
           <form
             onSubmit={(e) => {
@@ -313,7 +313,7 @@ export default function TaskDetailPage() {
             </CardHeader>
 
             <CardContent className="p-6 space-y-5">
-              {/* Task Title */}
+              
               <div>
                 <Input
                   label="Task Title"
@@ -325,7 +325,7 @@ export default function TaskDetailPage() {
                 />
               </div>
 
-              {/* Description */}
+              
               <div>
                 <Textarea
                   label="Description"
@@ -341,7 +341,7 @@ export default function TaskDetailPage() {
                 />
               </div>
 
-              {/* Status and Priority Row */}
+              
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Select
                   label="Status"
@@ -368,7 +368,7 @@ export default function TaskDetailPage() {
                 </Select>
               </div>
 
-              {/* Assignee and Due Date Row */}
+              
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Select
                   label="Assignee"
@@ -398,7 +398,7 @@ export default function TaskDetailPage() {
                 />
               </div>
 
-              {/* Submit / Save Button & Conflict Simulator */}
+              
               {!isReadOnly && (
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-slate-100">
                   <button
@@ -428,7 +428,7 @@ export default function TaskDetailPage() {
           </form>
         </Card>
 
-        {/* Comments Section */}
+        
         <Card className="border border-slate-200 shadow-sm">
           <CardHeader className="border-b border-slate-100 pb-3">
             <CardTitle className="text-sm flex items-center gap-2">
@@ -441,7 +441,7 @@ export default function TaskDetailPage() {
           </CardHeader>
 
           <CardContent className="p-6 space-y-6">
-            {/* Comment composer */}
+            
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -471,7 +471,7 @@ export default function TaskDetailPage() {
               </div>
             </form>
 
-            {/* Comments List */}
+            
             <div className="space-y-3 pt-2">
               {isCommentsLoading ? (
                 <div className="space-y-2">
@@ -523,7 +523,7 @@ export default function TaskDetailPage() {
           </CardContent>
         </Card>
 
-        {/* Optimistic Concurrency Conflict Dialog */}
+        
         <ConflictDialog
           isOpen={isConflictOpen}
           onClose={() => setIsConflictOpen(false)}
@@ -541,7 +541,7 @@ export default function TaskDetailPage() {
           isReapplying={updateMutation.isPending}
         />
 
-        {/* Delete Task Confirmation */}
+        
         <ConfirmDialog
           isOpen={isDeleteOpen}
           onClose={() => setIsDeleteOpen(false)}
@@ -552,7 +552,7 @@ export default function TaskDetailPage() {
           isLoading={deleteMutation.isPending}
         />
 
-        {/* Delete Comment Confirmation */}
+        
         <ConfirmDialog
           isOpen={!!commentToDelete}
           onClose={() => setCommentToDelete(null)}

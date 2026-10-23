@@ -31,7 +31,7 @@ export default function ProjectOverviewPage() {
   const params = useParams();
   const projectId = params.id as string;
 
-  // Project details
+  
   const { data: project, isLoading: isProjectLoading } = useQuery({
     queryKey: ['project', projectId],
     queryFn: async () => {
@@ -40,7 +40,7 @@ export default function ProjectOverviewPage() {
     },
   });
 
-  // Project tasks
+  
   const { data: tasksData, isLoading: isTasksLoading } = useQuery({
     queryKey: ['tasks', projectId, { pageSize: 5 }],
     queryFn: async () => {
@@ -49,7 +49,7 @@ export default function ProjectOverviewPage() {
     },
   });
 
-  // Project members
+  
   const { data: members, isLoading: isMembersLoading } = useQuery({
     queryKey: ['members', projectId],
     queryFn: async () => {
@@ -95,7 +95,7 @@ export default function ProjectOverviewPage() {
       <div className="space-y-6">
         <ProjectHeader project={project} />
 
-        {/* Project Statistics */}
+        
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Card>
             <CardContent className="p-5 flex items-center justify-between">
@@ -155,9 +155,9 @@ export default function ProjectOverviewPage() {
           </Card>
         </div>
 
-        {/* Two Columns: Recent Tasks & Team Members */}
+        
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Recent Tasks */}
+          
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-3">
               <div>
@@ -226,7 +226,7 @@ export default function ProjectOverviewPage() {
             </CardContent>
           </Card>
 
-          {/* Team Roster Summary */}
+          
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-3">
               <div>

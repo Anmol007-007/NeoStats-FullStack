@@ -39,7 +39,7 @@ export default function ProjectTasksPage() {
   const projectId = params.id as string;
   const queryClient = useQueryClient();
 
-  // Filters & sorting state
+  
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [priorityFilter, setPriorityFilter] = useState<string>('ALL');
@@ -48,7 +48,7 @@ export default function ProjectTasksPage() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [page, setPage] = useState(1);
 
-  // Create Task modal state
+  
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newDescription, setNewDescription] = useState('');
@@ -58,7 +58,7 @@ export default function ProjectTasksPage() {
   const [newDueDate, setNewDueDate] = useState('');
   const [formError, setFormError] = useState('');
 
-  // Fetch project details
+  
   const { data: project } = useQuery({
     queryKey: ['project', projectId],
     queryFn: async () => {
@@ -67,7 +67,7 @@ export default function ProjectTasksPage() {
     },
   });
 
-  // Fetch project members for assignee dropdown
+  
   const { data: members } = useQuery({
     queryKey: ['members', projectId],
     queryFn: async () => {
@@ -76,10 +76,10 @@ export default function ProjectTasksPage() {
     },
   });
 
-  // Eligible assignees: PM or TM (not VIEWER)
+  
   const eligibleAssignees = members?.filter((m) => m.role !== 'VIEWER') || [];
 
-  // Fetch tasks
+  
   const {
     data: tasksData,
     isLoading: isTasksLoading,
@@ -112,7 +112,7 @@ export default function ProjectTasksPage() {
     },
   });
 
-  // Create task mutation
+  
   const createMutation = useMutation({
     mutationFn: async () => {
       if (!newTitle.trim()) {
@@ -153,10 +153,10 @@ export default function ProjectTasksPage() {
       <div className="space-y-6">
         {project && <ProjectHeader project={project} />}
 
-        {/* Action and Filter Bar */}
+        
         <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs space-y-3">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            {/* Search */}
+            
             <div className="relative w-full sm:w-80">
               <Search className="h-4 w-4 absolute left-3 top-2.5 text-slate-400" />
               <input
@@ -171,7 +171,7 @@ export default function ProjectTasksPage() {
               />
             </div>
 
-            {/* Create Task button (if permission allowed & not archived) */}
+            
             {project?.permissions.canCreateTasks && project.status !== 'ARCHIVED' && (
               <Button
                 variant="teal"
@@ -184,14 +184,14 @@ export default function ProjectTasksPage() {
             )}
           </div>
 
-          {/* Filter dropdowns */}
+          
           <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100 text-xs">
             <div className="flex items-center gap-1.5 text-slate-500 font-medium">
               <Filter className="h-3.5 w-3.5" />
               <span>Filters:</span>
             </div>
 
-            {/* Status Filter */}
+            
             <select
               value={statusFilter}
               onChange={(e) => {
@@ -207,7 +207,7 @@ export default function ProjectTasksPage() {
               <option value="DONE">Done</option>
             </select>
 
-            {/* Priority Filter */}
+            
             <select
               value={priorityFilter}
               onChange={(e) => {
@@ -223,7 +223,7 @@ export default function ProjectTasksPage() {
               <option value="URGENT">Urgent</option>
             </select>
 
-            {/* Assignee Filter */}
+            
             <select
               value={assigneeFilter}
               onChange={(e) => {
@@ -240,7 +240,7 @@ export default function ProjectTasksPage() {
               ))}
             </select>
 
-            {/* Sort Field */}
+            
             <div className="ml-auto flex items-center gap-2">
               <span className="text-slate-400">Sort:</span>
               <select
@@ -270,7 +270,7 @@ export default function ProjectTasksPage() {
           </div>
         </div>
 
-        {/* Tasks Table/List */}
+        
         <div className="bg-white rounded-xl border border-slate-200/80 shadow-xs overflow-hidden">
           {isTasksLoading ? (
             <div className="p-4 space-y-3">
@@ -363,7 +363,7 @@ export default function ProjectTasksPage() {
             </div>
           )}
 
-          {/* Pagination */}
+          
           {tasksData?.meta && tasksData.meta.totalPages > 1 && (
             <div className="flex items-center justify-between p-3.5 border-t border-slate-100 bg-slate-50/50">
               <span className="text-xs text-slate-500">
@@ -391,7 +391,7 @@ export default function ProjectTasksPage() {
           )}
         </div>
 
-        {/* Create Task Modal */}
+        
         <Modal
           isOpen={isCreateOpen}
           onClose={() => setIsCreateOpen(false)}

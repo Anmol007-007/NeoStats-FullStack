@@ -45,7 +45,7 @@ export async function requireAuth(
       throw new AppError(401, 'UNAUTHENTICATED', 'Invalid or expired session');
     }
 
-    // Check user in DB per-request to enforce immediate deactivation (BR-2)
+    
     const user = await User.findById(decoded.id);
     if (!user) {
       throw new AppError(401, 'UNAUTHENTICATED', 'User no longer exists');

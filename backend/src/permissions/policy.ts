@@ -48,7 +48,7 @@ export function canManageProjectManagers(
   isArchived: boolean
 ): boolean {
   if (isArchived) return false;
-  // BR-5: Only Admin may grant, revoke or change the PROJECT_MANAGER role
+  
   return actor.role === 'ADMIN';
 }
 

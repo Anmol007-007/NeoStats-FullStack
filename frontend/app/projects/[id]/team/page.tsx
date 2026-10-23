@@ -34,17 +34,17 @@ export default function ProjectTeamPage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  // Add Member Modal State
+  
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [candidateSearch, setCandidateSearch] = useState('');
   const [selectedUserId, setSelectedUserId] = useState('');
   const [selectedRole, setSelectedRole] = useState<ProjectRole>('TEAM_MEMBER');
   const [addError, setAddError] = useState('');
 
-  // Remove Member Confirm State
+  
   const [memberToRemove, setMemberToRemove] = useState<Member | null>(null);
 
-  // Fetch project details
+  
   const { data: project } = useQuery({
     queryKey: ['project', projectId],
     queryFn: async () => {
@@ -53,7 +53,7 @@ export default function ProjectTeamPage() {
     },
   });
 
-  // Fetch project members
+  
   const { data: members, isLoading: isMembersLoading } = useQuery({
     queryKey: ['members', projectId],
     queryFn: async () => {
@@ -62,7 +62,7 @@ export default function ProjectTeamPage() {
     },
   });
 
-  // Fetch candidate users when modal is open
+  
   const { data: candidates, isLoading: isCandidatesLoading } = useQuery({
     queryKey: ['memberCandidates', projectId, candidateSearch],
     queryFn: async () => {
@@ -72,7 +72,7 @@ export default function ProjectTeamPage() {
     enabled: isAddOpen,
   });
 
-  // Add member mutation
+  
   const addMutation = useMutation({
     mutationFn: () => {
       if (!selectedUserId) {
@@ -99,7 +99,7 @@ export default function ProjectTeamPage() {
     },
   });
 
-  // Update member role mutation
+  
   const updateRoleMutation = useMutation({
     mutationFn: ({ userId, role }: { userId: string; role: ProjectRole }) =>
       api.members.updateRole(projectId, userId, { role }),
@@ -112,7 +112,7 @@ export default function ProjectTeamPage() {
     },
   });
 
-  // Remove member mutation
+  
   const removeMutation = useMutation({
     mutationFn: (userId: string) => api.members.remove(projectId, userId),
     onSuccess: () => {
@@ -135,7 +135,7 @@ export default function ProjectTeamPage() {
       <div className="space-y-6">
         {project && <ProjectHeader project={project} />}
 
-        {/* Team Header & Add Button */}
+        
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs">
           <div>
             <h2 className="text-base font-bold text-slate-900">
@@ -158,7 +158,7 @@ export default function ProjectTeamPage() {
           )}
         </div>
 
-        {/* Members Table */}
+        
         <div className="bg-white rounded-xl border border-slate-200/80 shadow-xs overflow-hidden">
           {isMembersLoading ? (
             <div className="p-4 space-y-3">
@@ -190,7 +190,7 @@ export default function ProjectTeamPage() {
                   key={member.userId}
                   className="grid grid-cols-12 px-4 py-3.5 items-center hover:bg-slate-50/50 transition-colors text-xs"
                 >
-                  {/* Name & Email */}
+                  
                   <div className="col-span-4 flex items-center gap-2.5 pr-2">
                     <div className="h-8 w-8 rounded-full bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center shrink-0">
                       {member.name.slice(0, 2).toUpperCase()}
@@ -205,7 +205,7 @@ export default function ProjectTeamPage() {
                     </div>
                   </div>
 
-                  {/* Global Role */}
+                  
                   <div className="col-span-3">
                     <span
                       className={`text-[10px] px-2 py-0.5 rounded-full border ${getRoleBadgeStyle(
@@ -216,7 +216,7 @@ export default function ProjectTeamPage() {
                     </span>
                   </div>
 
-                  {/* Project Role (editable if permitted) */}
+                  
                   <div className="col-span-3">
                     {canManageMembers ? (
                       <select
@@ -228,7 +228,7 @@ export default function ProjectTeamPage() {
                           })
                         }
                         disabled={
-                          // Only Admin can change to/from PROJECT_MANAGER (BR-5)
+                          
                           (!canManagePM && member.role === 'PROJECT_MANAGER') ||
                           updateRoleMutation.isPending
                         }
@@ -253,13 +253,13 @@ export default function ProjectTeamPage() {
                     )}
                   </div>
 
-                  {/* Remove Button */}
+                  
                   <div className="col-span-2 text-right">
                     {canManageMembers && (
                       <button
                         onClick={() => setMemberToRemove(member)}
                         disabled={
-                          // A PM cannot remove a PROJECT_MANAGER; only Admin can (BR-5)
+                          
                           !canManagePM && member.role === 'PROJECT_MANAGER'
                         }
                         className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
@@ -279,7 +279,7 @@ export default function ProjectTeamPage() {
           )}
         </div>
 
-        {/* Add Member Modal */}
+        
         <Modal
           isOpen={isAddOpen}
           onClose={() => setIsAddOpen(false)}
@@ -293,7 +293,7 @@ export default function ProjectTeamPage() {
               </div>
             )}
 
-            {/* Candidate Search */}
+            
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-slate-700">
                 Search Users
@@ -310,7 +310,7 @@ export default function ProjectTeamPage() {
               </div>
             </div>
 
-            {/* Candidate User List Selection */}
+            
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-slate-700">
                 Select Candidate
@@ -357,7 +357,7 @@ export default function ProjectTeamPage() {
               </div>
             </div>
 
-            {/* Project Role to Assign */}
+            
             <Select
               label="Project Role"
               value={selectedRole}
@@ -393,7 +393,7 @@ export default function ProjectTeamPage() {
           </div>
         </Modal>
 
-        {/* Remove Member Confirmation Dialog */}
+        
         <ConfirmDialog
           isOpen={!!memberToRemove}
           onClose={() => setMemberToRemove(null)}

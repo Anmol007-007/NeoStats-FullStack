@@ -9,7 +9,7 @@ import { validate } from '../middleware/validate.js';
 const router = Router();
 router.use(requireAuth, requireAdmin);
 
-// GET /users
+
 router.get(
   '/',
   validate({
@@ -59,7 +59,7 @@ router.get(
   }
 );
 
-// POST /users
+
 router.post(
   '/',
   validate({
@@ -94,7 +94,7 @@ router.post(
   }
 );
 
-// GET /users/:id
+
 router.get('/:id', async (req, res, next) => {
   try {
     const user = await User.findById(req.params.id);
@@ -105,7 +105,7 @@ router.get('/:id', async (req, res, next) => {
   }
 });
 
-// PATCH /users/:id
+
 router.patch(
   '/:id',
   validate({
@@ -121,7 +121,7 @@ router.patch(
       const targetUser = await User.findById(req.params.id);
       if (!targetUser) throw new AppError(404, 'NOT_FOUND', 'User not found');
 
-      // BR-3: Admin cannot change the role of themselves
+      
       if (req.user!.id === targetUser.id && req.body.role && req.body.role !== targetUser.role) {
         throw new AppError(403, 'FORBIDDEN', 'Admins cannot change their own role');
       }
@@ -145,10 +145,10 @@ router.patch(
   }
 );
 
-// POST /users/:id/deactivate
+
 router.post('/:id/deactivate', async (req, res, next) => {
   try {
-    // BR-3: Admin cannot deactivate themselves
+    
     if (req.user!.id === req.params.id) {
       throw new AppError(403, 'FORBIDDEN', 'Admins cannot deactivate their own account');
     }
@@ -166,7 +166,7 @@ router.post('/:id/deactivate', async (req, res, next) => {
   }
 });
 
-// POST /users/:id/activate
+
 router.post('/:id/activate', async (req, res, next) => {
   try {
     const user = await User.findByIdAndUpdate(
