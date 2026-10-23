@@ -1,18 +1,19 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import { Document, Schema, Types } from 'mongoose';
+import { projectsDb, mirrorSave, mirrorDelete } from '../db/connections.js';
 import { ProjectRole } from '../types/index.js';
 
 export interface IProjectMember extends Document {
   id: string;
-  projectId: mongoose.Types.ObjectId;
-  userId: mongoose.Types.ObjectId;
+  projectId: Types.ObjectId;
+  userId: Types.ObjectId;
   role: ProjectRole;
   addedAt: Date;
 }
 
 const ProjectMemberSchema = new Schema<IProjectMember>(
   {
-    projectId: { type: Schema.Types.ObjectId, ref: 'Project', required: true, index: true },
-    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+    projectId: { type: Schema.Types.ObjectId, required: true, index: true },
+    userId: { type: Schema.Types.ObjectId, required: true, index: true },
     role: {
       type: String,
       enum: ['PROJECT_MANAGER', 'TEAM_MEMBER', 'VIEWER'],
@@ -33,10 +34,17 @@ const ProjectMemberSchema = new Schema<IProjectMember>(
   }
 );
 
-// Compound unique index ensuring a user is added to a project only once
 ProjectMemberSchema.index({ projectId: 1, userId: 1 }, { unique: true });
 
-export const ProjectMember = mongoose.model<IProjectMember>(
+ProjectMemberSchema.post('save', async function (doc) {
+  await mirrorSave('projectmembers', doc);
+});
+
+ProjectMemberSchema.post('findOneAndDelete', async function (doc) {
+  if (doc) await mirrorDelete('projectmembers', doc._id);
+});
+
+export const ProjectMember = projectsDb.model<IProjectMember>(
   'ProjectMember',
   ProjectMemberSchema
 );

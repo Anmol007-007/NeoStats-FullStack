@@ -4,6 +4,7 @@ import { Comment } from '../models/Comment.js';
 import { Task } from '../models/Task.js';
 import { Project } from '../models/Project.js';
 import { ProjectMember } from '../models/ProjectMember.js';
+import { User } from '../models/User.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { requireAuth } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
@@ -42,7 +43,7 @@ router.get(
       const { page, pageSize } = req.query as any;
       const total = await Comment.countDocuments({ taskId: task._id });
       const comments = await Comment.find({ taskId: task._id })
-        .populate('authorId')
+        .populate({ path: 'authorId', model: User })
         .sort({ createdAt: 1 })
         .skip((page - 1) * pageSize)
         .limit(pageSize);

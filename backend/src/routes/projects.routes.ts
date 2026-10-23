@@ -9,6 +9,7 @@ import { AppError } from '../middleware/errorHandler.js';
 import { requireAuth } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
 import * as policy from '../permissions/policy.js';
+import { mirrorDelete, mirrorDeleteMany } from '../db/connections.js';
 
 const router = Router();
 router.use(requireAuth);
@@ -16,10 +17,12 @@ router.use(requireAuth);
 // Helper to compute project permissions
 function getProjectPermissions(actor: any, project: any, membershipRole: any) {
   const isArchived = project.status === 'ARCHIVED';
+  const isCreator = project.createdById?.toString() === actor.id;
+  const isProjectPM = membershipRole === 'PROJECT_MANAGER';
   return {
     canEdit: policy.canEditProject(actor, isArchived, membershipRole),
     canArchive: policy.canArchiveProject(actor, membershipRole),
-    canDelete: policy.canDeleteProject(actor),
+    canDelete: policy.canDeleteProject(actor) || isCreator || isProjectPM,
     canManageMembers: policy.canManageMembers(actor, isArchived, membershipRole),
     canManageProjectManagers: policy.canManageProjectManagers(actor, isArchived),
     canCreateTasks: policy.canCreateTask(actor, isArchived, membershipRole),
@@ -125,10 +128,6 @@ router.post(
   async (req, res, next) => {
     try {
       const actor = req.user!;
-      if (actor.role !== 'ADMIN') {
-        throw new AppError(403, 'FORBIDDEN', 'Only Admins can create projects');
-      }
-
       const { name, description, projectManagerId } = req.body;
 
       if (projectManagerId) {
@@ -149,7 +148,16 @@ router.post(
         createdById: actor.id,
       });
 
-      if (projectManagerId) {
+      // Automatically add creator as PROJECT_MANAGER so they immediately own and see their project
+      if (actor.role !== 'ADMIN') {
+        await ProjectMember.create({
+          projectId: project._id,
+          userId: actor.id,
+          role: 'PROJECT_MANAGER',
+        });
+      }
+
+      if (projectManagerId && projectManagerId !== actor.id) {
         await ProjectMember.create({
           projectId: project._id,
           userId: projectManagerId,
@@ -157,18 +165,23 @@ router.post(
         });
       }
 
-      const memberCount = projectManagerId ? 1 : 0;
-      const permissions = getProjectPermissions(actor, project, 'ADMIN');
+      const memberCount = await ProjectMember.countDocuments({ projectId: project._id });
+      const permissions = getProjectPermissions(
+        actor,
+        project,
+        actor.role === 'ADMIN' ? 'ADMIN' : 'PROJECT_MANAGER'
+      );
 
       return res.status(201).json({
         data: {
           id: project.id,
+          _id: project.id,
           name: project.name,
           description: project.description,
           status: project.status,
           memberCount,
           taskCount: 0,
-          myRole: 'ADMIN',
+          myRole: actor.role === 'ADMIN' ? 'ADMIN' : 'PROJECT_MANAGER',
           createdAt: project.createdAt,
           updatedAt: project.updatedAt,
           permissions,
@@ -366,16 +379,27 @@ router.post('/:id/unarchive', async (req, res, next) => {
   }
 });
 
-// DELETE /projects/:id (Admin only, cascades members, tasks, comments)
+// DELETE /projects/:id (Admin, Project Manager, or Creator, cascades members, tasks, comments)
 router.delete('/:id', async (req, res, next) => {
   try {
     const actor = req.user!;
-    if (!policy.canDeleteProject(actor)) {
-      throw new AppError(403, 'FORBIDDEN', 'Only Admins can delete projects');
-    }
-
     const project = await Project.findById(req.params.id);
     if (!project) throw new AppError(404, 'NOT_FOUND', 'Project not found');
+
+    const isCreator = project.createdById?.toString() === actor.id;
+    const isProjectPM = await ProjectMember.exists({
+      projectId: project._id,
+      userId: actor.id,
+      role: 'PROJECT_MANAGER',
+    });
+
+    if (actor.role !== 'ADMIN' && !isCreator && !isProjectPM) {
+      throw new AppError(
+        403,
+        'FORBIDDEN',
+        'Only Admins, Project Managers, or the Creator can delete this project'
+      );
+    }
 
     // Cascade deletion per BR-10
     const tasks = await Task.find({ projectId: project._id });
@@ -385,6 +409,12 @@ router.delete('/:id', async (req, res, next) => {
     await Task.deleteMany({ projectId: project._id });
     await ProjectMember.deleteMany({ projectId: project._id });
     await Project.findByIdAndDelete(project._id);
+
+    // Mirror deletions to pm_platform
+    await mirrorDeleteMany('comments', { taskId: { $in: taskIds } });
+    await mirrorDeleteMany('tasks', { projectId: project._id });
+    await mirrorDeleteMany('projectmembers', { projectId: project._id });
+    await mirrorDelete('projects', project._id);
 
     return res.status(204).send();
   } catch (err) {

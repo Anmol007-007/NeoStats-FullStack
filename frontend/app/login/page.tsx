@@ -7,64 +7,10 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import {
   Layers,
-  Shield,
-  UserCheck,
-  Users,
-  Eye,
-  Lock,
-  Mail,
   ArrowRight,
-  UserX,
   AlertCircle,
+  UserCheck,
 } from 'lucide-react';
-
-const DEMO_ACCOUNTS = [
-  {
-    role: 'ADMIN',
-    name: 'Alice Admin',
-    email: 'admin@example.com',
-    password: 'Admin@123',
-    icon: Shield,
-    color: 'hover:border-purple-300 hover:bg-purple-50/50 text-purple-700',
-    badge: 'bg-purple-100 text-purple-700 border-purple-200',
-  },
-  {
-    role: 'PROJECT_MANAGER',
-    name: 'Priya Manager',
-    email: 'pm1@example.com',
-    password: 'Password@123',
-    icon: UserCheck,
-    color: 'hover:border-teal-300 hover:bg-teal-50/50 text-teal-700',
-    badge: 'bg-teal-100 text-teal-700 border-teal-200',
-  },
-  {
-    role: 'TEAM_MEMBER',
-    name: 'Maya Member',
-    email: 'member1@example.com',
-    password: 'Password@123',
-    icon: Users,
-    color: 'hover:border-blue-300 hover:bg-blue-50/50 text-blue-700',
-    badge: 'bg-blue-100 text-blue-700 border-blue-200',
-  },
-  {
-    role: 'VIEWER',
-    name: 'Vera Viewer',
-    email: 'viewer@example.com',
-    password: 'Password@123',
-    icon: Eye,
-    color: 'hover:border-slate-300 hover:bg-slate-50 text-slate-700',
-    badge: 'bg-slate-100 text-slate-700 border-slate-200',
-  },
-  {
-    role: 'INACTIVE',
-    name: 'Ian Inactive',
-    email: 'inactive@example.com',
-    password: 'Password@123',
-    icon: UserX,
-    color: 'hover:border-rose-300 hover:bg-rose-50/50 text-rose-700',
-    badge: 'bg-rose-100 text-rose-700 border-rose-200',
-  },
-];
 
 export default function LoginPage() {
   const { login, signup } = useAuth();
@@ -103,19 +49,12 @@ export default function LoginPage() {
         await login(email.trim(), password);
       } catch (err: any) {
         setErrorMessage(
-          err?.message || 'Your account has been deactivated. Contact an administrator.'
+          err?.message || 'Login failed. Please verify your email and password.'
         );
       } finally {
         setIsLoading(false);
       }
     }
-  };
-
-  const handleQuickLogin = (demoEmail: string, demoPass: string) => {
-    setIsSignUp(false);
-    setEmail(demoEmail);
-    setPassword(demoPass);
-    setErrorMessage(null);
   };
 
   return (
@@ -132,7 +71,7 @@ export default function LoginPage() {
           <p className="text-xs text-slate-500 max-w-xs mx-auto">
             {isSignUp
               ? 'Join your team and start managing projects with real-time locking.'
-              : 'High-performance collaborative project management with optimistic locking & RBAC.'}
+              : 'Collaborative project management with optimistic locking & real-time MongoDB Atlas sync.'}
           </p>
         </div>
 
@@ -147,7 +86,7 @@ export default function LoginPage() {
                   setIsSignUp(false);
                   setErrorMessage(null);
                 }}
-                className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
                   !isSignUp
                     ? 'bg-white text-slate-900 shadow-xs'
                     : 'text-slate-500 hover:text-slate-700'
@@ -161,13 +100,13 @@ export default function LoginPage() {
                   setIsSignUp(true);
                   setErrorMessage(null);
                 }}
-                className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
                   isSignUp
                     ? 'bg-white text-slate-900 shadow-xs'
                     : 'text-slate-500 hover:text-slate-700'
                 }`}
               >
-                Sign Up
+                Create Account
               </button>
             </div>
 
@@ -181,7 +120,7 @@ export default function LoginPage() {
                   <AlertCircle className="h-4 w-4 shrink-0 text-rose-500 mt-0.5" />
                   <div>
                     <p className="font-semibold text-rose-800">
-                      {isSignUp ? 'Registration Error' : 'Account Access Denied'}
+                      {isSignUp ? 'Registration Error' : 'Authentication Error'}
                     </p>
                     <p className="text-rose-600">{errorMessage}</p>
                   </div>
@@ -251,9 +190,9 @@ export default function LoginPage() {
                         key={item.key}
                         type="button"
                         onClick={() => setRole(item.key as any)}
-                        className={`py-1.5 px-2 text-[11px] font-medium rounded-lg border transition-all text-center ${
+                        className={`py-1.5 px-2 text-[11px] font-medium rounded-lg border transition-all text-center cursor-pointer ${
                           role === item.key
-                            ? 'bg-teal-50 border-teal-500 text-teal-800 font-semibold'
+                            ? 'bg-teal-50 border-teal-500 text-teal-800 font-semibold shadow-2xs'
                             : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
                         }`}
                       >
@@ -276,7 +215,7 @@ export default function LoginPage() {
               </Button>
             </form>
 
-            <div className="mt-4 pt-3 border-t border-slate-100 text-center">
+            <div className="mt-5 pt-4 border-t border-slate-100 text-center">
               <p className="text-xs text-slate-500">
                 {isSignUp ? 'Already have an account? ' : "Don't have an account yet? "}
                 <button
@@ -293,51 +232,6 @@ export default function LoginPage() {
             </div>
           </CardContent>
         </Card>
-
-        {/* Demo Accounts Quick-Select for Evaluators */}
-        <div className="space-y-3 pt-2">
-          <div className="flex items-center gap-3">
-            <div className="h-px bg-slate-200 flex-1" />
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-              Evaluator Quick Access
-            </span>
-            <div className="h-px bg-slate-200 flex-1" />
-          </div>
-
-          <div className="grid grid-cols-2 gap-2.5">
-            {DEMO_ACCOUNTS.map((acc, idx) => {
-              const Icon = acc.icon;
-              const isFullWidth = idx === DEMO_ACCOUNTS.length - 1 && DEMO_ACCOUNTS.length % 2 !== 0;
-              return (
-                <button
-                  key={acc.role}
-                  type="button"
-                  data-testid={`preset-${acc.role.toLowerCase()}`}
-                  onClick={() => handleQuickLogin(acc.email, acc.password)}
-                  className={`p-3 rounded-xl border border-slate-200 bg-white text-left transition-all hover:shadow-xs flex flex-col gap-1 cursor-pointer group ${acc.color} ${isFullWidth ? 'col-span-2' : ''}`}
-                >
-                  <div className="flex items-center justify-between">
-                    <span
-                      className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border ${acc.badge}`}
-                    >
-                      {acc.role === 'INACTIVE' ? 'INACTIVE (TEST)' : acc.role.replace('_', ' ')}
-                    </span>
-                    <Icon className="h-3.5 w-3.5 opacity-60 group-hover:opacity-100 transition-opacity" />
-                  </div>
-                  <div className="text-xs font-semibold text-slate-800 mt-1">
-                    {acc.name}
-                  </div>
-                  <div className="text-[10px] text-slate-400 font-mono">
-                    {acc.email}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-          <p className="text-[11px] text-center text-slate-400 italic">
-            Click any demo profile above to populate credentials.
-          </p>
-        </div>
       </div>
     </div>
   );

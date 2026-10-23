@@ -13,7 +13,6 @@ import { taskRoutes } from './routes/tasks.routes.js';
 import { commentRoutes } from './routes/comments.routes.js';
 import { dashboardRoutes } from './routes/dashboard.routes.js';
 import { errorHandler } from './middleware/errorHandler.js';
-import { seedDatabase } from './db/seed.js';
 
 dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 
@@ -34,6 +33,16 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
+// Request Logger
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    console.log(`[HTTP] ${req.method} ${req.originalUrl} ${res.statusCode} (${duration}ms)`);
+  });
+  next();
+});
+
 // Health Check
 app.get('/health', (_req, res) => {
   res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
@@ -48,18 +57,17 @@ app.use('/api/v1', taskRoutes);
 app.use('/api/v1', commentRoutes);
 app.use('/api/v1/dashboard', dashboardRoutes);
 
+import { waitForDbConnections } from './db/connections.js';
+
 // Centralized Error Handler (must be last)
 app.use(errorHandler);
 
 // Connect to MongoDB and start server
 async function startServer() {
   try {
-    console.log('[Database] Connecting to MongoDB Atlas...');
-    await mongoose.connect(MONGODB_URI);
-    console.log('[Database] Connected to MongoDB Atlas successfully.');
-
-    // Seed database if empty
-    await seedDatabase(false);
+    console.log('[Database] Connecting to MongoDB Atlas multi-databases...');
+    await waitForDbConnections();
+    console.log('[Database] Connected to users_db, projects_db, and tasks_db successfully.');
 
     app.listen(PORT, () => {
       console.log(`[Server] Backend API running at http://localhost:${PORT}/api/v1`);

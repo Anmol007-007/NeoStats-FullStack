@@ -10,7 +10,8 @@ interface ConfirmDialogProps {
   onClose: () => void;
   onConfirm: () => void;
   title: string;
-  message: string;
+  message?: string;
+  description?: string;
   confirmText?: string;
   cancelText?: string;
   variant?: 'danger' | 'primary';
@@ -23,11 +24,14 @@ export function ConfirmDialog({
   onConfirm,
   title,
   message,
+  description,
   confirmText = 'Confirm',
   cancelText = 'Cancel',
   variant = 'danger',
   isLoading = false,
 }: ConfirmDialogProps) {
+  const dialogMessage = message ?? description ?? '';
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title} maxWidth="sm">
       <div className="flex flex-col gap-4">
@@ -42,7 +46,7 @@ export function ConfirmDialog({
             <AlertCircle className="h-5 w-5" />
           </div>
           <p className="text-sm text-slate-600 leading-relaxed pt-1">
-            {message}
+            {dialogMessage}
           </p>
         </div>
 

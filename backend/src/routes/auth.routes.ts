@@ -6,6 +6,7 @@ import { User } from '../models/User.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { requireAuth } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
+import { mirrorSave } from '../db/connections.js';
 
 const router = Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecret_jwt_key_taskflow_9876543210';
@@ -55,7 +56,7 @@ router.post(
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
 
-      return res.status(200).json({ data: user.toJSON() });
+      return res.status(200).json({ data: user.toJSON(), token });
     } catch (err) {
       next(err);
     }
@@ -90,6 +91,8 @@ router.post(
         isActive: true,
       });
 
+      await mirrorSave('users', user);
+
       const token = jwt.sign(
         { id: user.id, email: user.email, role: user.role },
         JWT_SECRET,
@@ -103,7 +106,7 @@ router.post(
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
 
-      return res.status(201).json({ data: user.toJSON() });
+      return res.status(201).json({ data: user.toJSON(), token });
     } catch (err) {
       next(err);
     }

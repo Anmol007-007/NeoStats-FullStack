@@ -24,7 +24,8 @@ router.get('/:id/members', async (req, res, next) => {
       if (!isMember) throw new AppError(403, 'FORBIDDEN', 'Access denied');
     }
 
-    const memberships = await ProjectMember.find({ projectId: project._id }).populate('userId');
+    const memberships = await ProjectMember.find({ projectId: project._id })
+      .populate({ path: 'userId', model: User });
 
     const data = memberships
       .filter((m) => m.userId) // filter deleted or dangling
@@ -204,7 +205,7 @@ router.patch(
       const membership = await ProjectMember.findOne({
         projectId: project._id,
         userId: req.params.userId,
-      }).populate('userId');
+      }).populate({ path: 'userId', model: User });
 
       if (!membership || !membership.userId) {
         throw new AppError(404, 'NOT_FOUND', 'Project membership not found');

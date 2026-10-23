@@ -13,6 +13,7 @@ import { Select } from '@/components/ui/select';
 import { Modal } from '@/components/ui/modal';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import {
   FolderKanban,
   Plus,
@@ -22,6 +23,7 @@ import {
   ArrowRight,
   Archive,
   Layers,
+  Trash2,
 } from 'lucide-react';
 import {
   formatDate,
@@ -108,6 +110,24 @@ export default function ProjectsPage() {
     },
   });
 
+  const [projectToDelete, setProjectToDelete] = useState<{ id: string; name: string } | null>(null);
+
+  // Delete project mutation
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      return api.projects.delete(id);
+    },
+    onSuccess: () => {
+      toast.success('Project deleted successfully');
+      setProjectToDelete(null);
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+    },
+    onError: (err: any) => {
+      toast.error(err.message || 'Failed to delete project');
+    },
+  });
+
   return (
     <AppLayout>
       <div className="space-y-6">
@@ -124,7 +144,7 @@ export default function ProjectsPage() {
             </p>
           </div>
 
-          {user?.role === 'ADMIN' && (
+          {user && (
             <Button
               variant="teal"
               size="sm"
@@ -262,12 +282,28 @@ export default function ProjectsPage() {
                       Team
                     </Link>
                   </div>
-                  <Link
-                    href={`/projects/${project.id}`}
-                    className="font-semibold text-teal-600 hover:text-teal-700 flex items-center gap-1 transition-colors"
-                  >
-                    Details <ArrowRight className="h-3.5 w-3.5" />
-                  </Link>
+                  <div className="flex items-center gap-2">
+                    {(user?.role === 'ADMIN' || project.myRole === 'PROJECT_MANAGER' || project.myRole === 'ADMIN') && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setProjectToDelete({ id: project.id, name: project.name });
+                        }}
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                        title="Delete project"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                    <Link
+                      href={`/projects/${project.id}`}
+                      className="font-semibold text-teal-600 hover:text-teal-700 flex items-center gap-1 transition-colors"
+                    >
+                      Details <ArrowRight className="h-3.5 w-3.5" />
+                    </Link>
+                  </div>
                 </div>
               </Card>
             ))}
@@ -370,6 +406,20 @@ export default function ProjectsPage() {
             </div>
           </form>
         </Modal>
+
+        {/* Delete Confirmation Dialog */}
+        <ConfirmDialog
+          isOpen={!!projectToDelete}
+          onClose={() => setProjectToDelete(null)}
+          onConfirm={() => {
+            if (projectToDelete) deleteMutation.mutate(projectToDelete.id);
+          }}
+          title="Delete Project"
+          message={`Are you sure you want to delete "${projectToDelete?.name}"? All associated tasks, members, and comments will be permanently removed from MongoDB.`}
+          confirmText="Delete Project"
+          variant="danger"
+          isLoading={deleteMutation.isPending}
+        />
       </div>
     </AppLayout>
   );

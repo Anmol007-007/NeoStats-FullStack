@@ -1,0 +1,84 @@
+# ==============================================================================
+# TaskFlow (NeoStats-FullStack) - System & Environment Requirements
+# ==============================================================================
+
+# Core Runtime Prerequisites
+Node.js >= 20.0.0
+npm >= 10.0.0
+
+# ------------------------------------------------------------------------------
+# Backend Dependencies (Express, Mongoose & TypeScript)
+# Directory: ./backend
+# Installation command: cd backend && npm install
+# ------------------------------------------------------------------------------
+bcryptjs==^3.0.3
+cookie-parser==^1.4.7
+cors==^2.8.5
+dotenv==^17.3.1
+express==^5.2.1
+jsonwebtoken==^9.0.3
+mongodb==^7.1.0
+mongoose==^9.3.2
+zod==^4.3.6
+
+# Backend Dev Tools
+typescript==^5.9.3
+tsx==^4.21.0
+@types/node==^24.11.1
+@types/express==^5.0.6
+@types/cors==^2.8.19
+@types/cookie-parser==^1.4.10
+@types/jsonwebtoken==^9.0.12
+@types/bcryptjs==^2.4.6
+
+# ------------------------------------------------------------------------------
+# Frontend Dependencies (Next.js 16, React 19, TailwindCSS, TanStack Query)
+# Directory: ./frontend
+# Installation command: cd frontend && npm install
+# ------------------------------------------------------------------------------
+next==16.4.2
+react==^19.0.0
+react-dom==^19.0.0
+@tanstack/react-query==^5.90.2
+lucide-react==^1.16.0
+sonner==^2.0.7
+clsx==^2.1.1
+tailwind-merge==^3.5.0
+class-variance-authority==^0.7.1
+
+# Frontend Dev Tools
+tailwindcss==^4
+@tailwindcss/postcss==^4
+typescript==^5
+@types/node==^20
+@types/react==^19
+@types/react-dom==^19
+
+# ------------------------------------------------------------------------------
+# Environment Variables
+# ------------------------------------------------------------------------------
+# Backend (.env in ./backend):
+# PORT=4000
+# MONGODB_URI=mongodb+srv://aids23anmolsoni_db_user:7QlJdlhPLInSZgoc@fullstack.tlfwh2o.mongodb.net/pm_platform?retryWrites=true&w=majority
+# JWT_SECRET=supersecret_jwt_key_taskflow_9876543210
+# FRONTEND_URL=http://localhost:3000
+# NODE_ENV=development
+
+# Frontend (.env.local in ./frontend):
+# NEXT_PUBLIC_API_URL=http://localhost:4000/api/v1
+# NEXT_PUBLIC_ENABLE_MOCK=false
+
+# ------------------------------------------------------------------------------
+# Quick Start Commands
+# ------------------------------------------------------------------------------
+# 1. Install all dependencies:
+#    cd backend && npm install
+#    cd ../frontend && npm install
+#
+# 2. Start Backend:
+#    cd backend && npm run build && npm start
+#    (or for development: npm run dev)
+#
+# 3. Start Frontend:
+#    cd frontend && npm run dev
+#    (Access app at http://localhost:3000)

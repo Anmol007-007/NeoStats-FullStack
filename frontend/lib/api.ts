@@ -14,13 +14,9 @@ import {
   TaskStatus,
   User,
 } from './types';
-import { mockStore } from './mock-store';
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
-
-// Connect directly to live Express backend with MongoDB
-const IS_PROTOTYPE_MODE = process.env.NEXT_PUBLIC_ENABLE_MOCK === 'true';
 
 export class ApiError extends Error {
   status: number;
@@ -58,6 +54,7 @@ export async function apiRequest<T>(
   const { params, headers, ...restOptions } = options;
 
   let url = `${API_BASE_URL}${endpoint}`;
+
   if (params) {
     const searchParams = new URLSearchParams();
     Object.entries(params).forEach(([key, value]) => {
@@ -71,10 +68,15 @@ export async function apiRequest<T>(
     }
   }
 
-  const defaultHeaders: HeadersInit = {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('taskflow_token') : null;
+  const defaultHeaders: Record<string, string> = {
     'Content-Type': 'application/json',
     Accept: 'application/json',
   };
+
+  if (token) {
+    defaultHeaders['Authorization'] = `Bearer ${token}`;
+  }
 
   const response = await fetch(url, {
     ...restOptions,
@@ -130,63 +132,39 @@ export async function apiRequest<T>(
   return data as T;
 }
 
-// ----------------- API Endpoints (With Prototype Fallback) -----------------
+// ----------------- Production API Endpoints -----------------
 
 export const api = {
   // Auth
   auth: {
     login: async (credentials: { email: string; password: string }) => {
-      if (IS_PROTOTYPE_MODE) {
-        const user = mockStore.login(credentials.email);
-        return { data: user };
-      }
-      return apiRequest<ApiDataResponse<User>>('/auth/login', {
+      return apiRequest<ApiDataResponse<User> & { token?: string }>('/auth/login', {
         method: 'POST',
         body: JSON.stringify(credentials),
       });
     },
     signup: async (data: { name: string; email: string; password: string; role?: string }) => {
-      if (IS_PROTOTYPE_MODE) {
-        const user = mockStore.signup(data);
-        return { data: user };
-      }
-      return apiRequest<ApiDataResponse<User>>('/auth/signup', {
+      return apiRequest<ApiDataResponse<User> & { token?: string }>('/auth/signup', {
         method: 'POST',
         body: JSON.stringify(data),
       });
     },
     logout: async () => {
-      if (IS_PROTOTYPE_MODE) {
-        mockStore.logout();
-        return;
-      }
       return apiRequest<void>('/auth/logout', { method: 'POST' });
     },
     getMe: async () => {
-      if (IS_PROTOTYPE_MODE) {
-        const user = mockStore.getCurrentUser();
-        if (!user) throw new ApiError(401, 'UNAUTHENTICATED', 'Not authenticated');
-        return { data: user };
-      }
       return apiRequest<ApiDataResponse<User>>('/auth/me');
     },
     updateMe: async (data: { name: string }) => {
-      if (IS_PROTOTYPE_MODE) {
-        const user = mockStore.updateProfile(data.name);
-        return { data: user };
-      }
       return apiRequest<ApiDataResponse<User>>('/auth/me', {
         method: 'PATCH',
         body: JSON.stringify(data),
       });
     },
-    changePassword: async (_data: { currentPassword: string; newPassword: string }) => {
-      if (IS_PROTOTYPE_MODE) {
-        return;
-      }
+    changePassword: async (data: { currentPassword: string; newPassword: string }) => {
       return apiRequest<void>('/auth/change-password', {
         method: 'POST',
-        body: JSON.stringify(_data),
+        body: JSON.stringify(data),
       });
     },
   },
@@ -200,18 +178,9 @@ export const api = {
       role?: string;
       isActive?: boolean;
     }) => {
-      if (IS_PROTOTYPE_MODE) {
-        return mockStore.getUsers(params);
-      }
       return apiRequest<ApiListResponse<User>>('/users', { params });
     },
     get: async (id: string) => {
-      if (IS_PROTOTYPE_MODE) {
-        const users = mockStore.getUsers().data;
-        const u = users.find((user) => user.id === id);
-        if (!u) throw new ApiError(404, 'NOT_FOUND', 'User not found');
-        return { data: u };
-      }
       return apiRequest<ApiDataResponse<User>>(`/users/${id}`);
     },
     create: async (data: {
@@ -220,10 +189,6 @@ export const api = {
       password: string;
       role: any;
     }) => {
-      if (IS_PROTOTYPE_MODE) {
-        const user = mockStore.createUser(data);
-        return { data: user };
-      }
       return apiRequest<ApiDataResponse<User>>('/users', {
         method: 'POST',
         body: JSON.stringify(data),
@@ -238,29 +203,17 @@ export const api = {
         password?: string;
       }
     ) => {
-      if (IS_PROTOTYPE_MODE) {
-        const user = mockStore.updateUser(id, data);
-        return { data: user };
-      }
       return apiRequest<ApiDataResponse<User>>(`/users/${id}`, {
         method: 'PATCH',
         body: JSON.stringify(data),
       });
     },
     deactivate: async (id: string) => {
-      if (IS_PROTOTYPE_MODE) {
-        const user = mockStore.toggleUserActive(id, false);
-        return { data: user };
-      }
       return apiRequest<ApiDataResponse<User>>(`/users/${id}/deactivate`, {
         method: 'POST',
       });
     },
     activate: async (id: string) => {
-      if (IS_PROTOTYPE_MODE) {
-        const user = mockStore.toggleUserActive(id, true);
-        return { data: user };
-      }
       return apiRequest<ApiDataResponse<User>>(`/users/${id}/activate`, {
         method: 'POST',
       });
@@ -275,16 +228,9 @@ export const api = {
       q?: string;
       status?: ProjectStatus;
     }) => {
-      if (IS_PROTOTYPE_MODE) {
-        return mockStore.getProjects(params?.status, params?.q);
-      }
       return apiRequest<ApiListResponse<ProjectListItem>>('/projects', { params });
     },
     get: async (id: string) => {
-      if (IS_PROTOTYPE_MODE) {
-        const project = mockStore.getProject(id);
-        return { data: project };
-      }
       return apiRequest<ApiDataResponse<ProjectDetail>>(`/projects/${id}`);
     },
     create: async (data: {
@@ -292,48 +238,28 @@ export const api = {
       description?: string;
       projectManagerId?: string;
     }) => {
-      if (IS_PROTOTYPE_MODE) {
-        const project = mockStore.createProject(data);
-        return { data: project };
-      }
       return apiRequest<ApiDataResponse<ProjectDetail>>('/projects', {
         method: 'POST',
         body: JSON.stringify(data),
       });
     },
     update: async (id: string, data: { name?: string; description?: string }) => {
-      if (IS_PROTOTYPE_MODE) {
-        const project = mockStore.updateProject(id, data);
-        return { data: project };
-      }
       return apiRequest<ApiDataResponse<ProjectDetail>>(`/projects/${id}`, {
         method: 'PATCH',
         body: JSON.stringify(data),
       });
     },
     archive: async (id: string) => {
-      if (IS_PROTOTYPE_MODE) {
-        const project = mockStore.archiveProject(id);
-        return { data: project };
-      }
       return apiRequest<ApiDataResponse<ProjectDetail>>(`/projects/${id}/archive`, {
         method: 'POST',
       });
     },
     unarchive: async (id: string) => {
-      if (IS_PROTOTYPE_MODE) {
-        const project = mockStore.unarchiveProject(id);
-        return { data: project };
-      }
       return apiRequest<ApiDataResponse<ProjectDetail>>(`/projects/${id}/unarchive`, {
         method: 'POST',
       });
     },
     delete: async (id: string) => {
-      if (IS_PROTOTYPE_MODE) {
-        mockStore.deleteProject(id);
-        return;
-      }
       return apiRequest<void>(`/projects/${id}`, { method: 'DELETE' });
     },
   },
@@ -341,25 +267,15 @@ export const api = {
   // Members
   members: {
     list: async (projectId: string) => {
-      if (IS_PROTOTYPE_MODE) {
-        return { data: mockStore.getMembers(projectId) };
-      }
       return apiRequest<ApiDataResponse<Member[]>>(`/projects/${projectId}/members`);
     },
     candidates: async (projectId: string, q?: string) => {
-      if (IS_PROTOTYPE_MODE) {
-        return { data: mockStore.getCandidates(projectId, q) };
-      }
       return apiRequest<ApiDataResponse<User[]>>(
         `/projects/${projectId}/member-candidates`,
         { params: { q } }
       );
     },
     add: async (projectId: string, data: { userId: string; role: ProjectRole }) => {
-      if (IS_PROTOTYPE_MODE) {
-        const m = mockStore.addMember(projectId, data);
-        return { data: m };
-      }
       return apiRequest<ApiDataResponse<Member>>(`/projects/${projectId}/members`, {
         method: 'POST',
         body: JSON.stringify(data),
@@ -370,10 +286,6 @@ export const api = {
       userId: string,
       data: { role: ProjectRole }
     ) => {
-      if (IS_PROTOTYPE_MODE) {
-        const m = mockStore.updateMemberRole(projectId, userId, data.role);
-        return { data: m };
-      }
       return apiRequest<ApiDataResponse<Member>>(
         `/projects/${projectId}/members/${userId}`,
         {
@@ -383,10 +295,6 @@ export const api = {
       );
     },
     remove: async (projectId: string, userId: string) => {
-      if (IS_PROTOTYPE_MODE) {
-        mockStore.removeMember(projectId, userId);
-        return;
-      }
       return apiRequest<void>(`/projects/${projectId}/members/${userId}`, {
         method: 'DELETE',
       });
@@ -408,9 +316,6 @@ export const api = {
         order?: 'asc' | 'desc';
       }
     ) => {
-      if (IS_PROTOTYPE_MODE) {
-        return mockStore.getTasks(projectId, params);
-      }
       return apiRequest<ApiListResponse<Task>>(`/projects/${projectId}/tasks`, {
         params,
       });
@@ -421,17 +326,11 @@ export const api = {
       status?: TaskStatus;
       assignee?: 'me';
     }) => {
-      if (IS_PROTOTYPE_MODE) {
-        return mockStore.getMyTasks(params?.status);
-      }
       return apiRequest<ApiListResponse<Task>>('/tasks', {
         params: { assignee: 'me', ...params },
       });
     },
     get: async (id: string) => {
-      if (IS_PROTOTYPE_MODE) {
-        return { data: mockStore.getTask(id) };
-      }
       return apiRequest<ApiDataResponse<Task>>(`/tasks/${id}`);
     },
     create: async (
@@ -445,9 +344,6 @@ export const api = {
         dueDate?: string | null;
       }
     ) => {
-      if (IS_PROTOTYPE_MODE) {
-        return { data: mockStore.createTask(projectId, data) };
-      }
       return apiRequest<ApiDataResponse<Task>>(`/projects/${projectId}/tasks`, {
         method: 'POST',
         body: JSON.stringify(data),
@@ -456,7 +352,7 @@ export const api = {
     update: async (
       id: string,
       data: {
-        version: number; // Required for optimistic concurrency!
+        version: number;
         title?: string;
         description?: string;
         status?: TaskStatus;
@@ -465,19 +361,12 @@ export const api = {
         dueDate?: string | null;
       }
     ) => {
-      if (IS_PROTOTYPE_MODE) {
-        return { data: mockStore.updateTask(id, data) };
-      }
       return apiRequest<ApiDataResponse<Task>>(`/tasks/${id}`, {
         method: 'PATCH',
         body: JSON.stringify(data),
       });
     },
     delete: async (id: string) => {
-      if (IS_PROTOTYPE_MODE) {
-        mockStore.deleteTask(id);
-        return;
-      }
       return apiRequest<void>(`/tasks/${id}`, { method: 'DELETE' });
     },
   },
@@ -488,25 +377,15 @@ export const api = {
       taskId: string,
       params?: { page?: number; pageSize?: number }
     ) => {
-      if (IS_PROTOTYPE_MODE) {
-        return { data: mockStore.getComments(taskId), meta: { page: 1, pageSize: 50, total: 3, totalPages: 1 } };
-      }
       return apiRequest<ApiListResponse<Comment>>(`/tasks/${taskId}/comments`, { params });
     },
     create: async (taskId: string, data: { body: string }) => {
-      if (IS_PROTOTYPE_MODE) {
-        return { data: mockStore.createComment(taskId, data.body) };
-      }
       return apiRequest<ApiDataResponse<Comment>>(`/tasks/${taskId}/comments`, {
         method: 'POST',
         body: JSON.stringify(data),
       });
     },
     delete: async (commentId: string) => {
-      if (IS_PROTOTYPE_MODE) {
-        mockStore.deleteComment(commentId);
-        return;
-      }
       return apiRequest<void>(`/comments/${commentId}`, { method: 'DELETE' });
     },
   },
@@ -514,9 +393,6 @@ export const api = {
   // Dashboard
   dashboard: {
     get: async () => {
-      if (IS_PROTOTYPE_MODE) {
-        return { data: mockStore.getDashboard() };
-      }
       return apiRequest<ApiDataResponse<DashboardData>>('/dashboard');
     },
   },

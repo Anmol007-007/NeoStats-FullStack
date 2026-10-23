@@ -9,6 +9,7 @@ import { AppError } from '../middleware/errorHandler.js';
 import { requireAuth } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
 import * as policy from '../permissions/policy.js';
+import { mirrorDelete, mirrorDeleteMany } from '../db/connections.js';
 
 const router = Router();
 router.use(requireAuth);
@@ -43,6 +44,7 @@ async function toTaskDto(taskDoc: any, actor: any, membershipRole: any) {
 
   return {
     id: taskDoc.id,
+    _id: taskDoc.id,
     projectId: taskDoc.projectId.toString(),
     title: taskDoc.title,
     description: taskDoc.description,
@@ -104,8 +106,8 @@ router.get(
       const sortOrder = order === 'asc' ? 1 : -1;
       const total = await Task.countDocuments(query);
       const tasks = await Task.find(query)
-        .populate('assigneeId')
-        .populate('createdById')
+        .populate({ path: 'assigneeId', model: User })
+        .populate({ path: 'createdById', model: User })
         .sort({ [sort]: sortOrder })
         .skip((page - 1) * pageSize)
         .limit(pageSize);
@@ -150,8 +152,8 @@ router.get(
 
       const total = await Task.countDocuments(query);
       const tasks = await Task.find(query)
-        .populate('assigneeId')
-        .populate('createdById')
+        .populate({ path: 'assigneeId', model: User })
+        .populate({ path: 'createdById', model: User })
         .sort({ updatedAt: -1 })
         .skip((page - 1) * pageSize)
         .limit(pageSize);
@@ -248,7 +250,9 @@ router.post(
         version: 1,
       });
 
-      const populated = await Task.findById(task._id).populate('assigneeId').populate('createdById');
+      const populated = await Task.findById(task._id)
+        .populate({ path: 'assigneeId', model: User })
+        .populate({ path: 'createdById', model: User });
       const dto = await toTaskDto(populated, actor, membershipRole);
 
       return res.status(201).json({ data: dto });
@@ -262,7 +266,9 @@ router.post(
 router.get('/tasks/:id', async (req, res, next) => {
   try {
     const actor = req.user!;
-    const task = await Task.findById(req.params.id).populate('assigneeId').populate('createdById');
+    const task = await Task.findById(req.params.id)
+      .populate({ path: 'assigneeId', model: User })
+      .populate({ path: 'createdById', model: User });
     if (!task) throw new AppError(404, 'NOT_FOUND', 'Task not found');
 
     let membershipRole: any = null;
@@ -355,14 +361,16 @@ router.patch(
       const updated = await Task.findOneAndUpdate(
         { _id: task._id, version },
         { ...fieldsToUpdate, $inc: { version: 1 } },
-        { new: true }
+        { returnDocument: 'after' }
       )
-        .populate('assigneeId')
-        .populate('createdById');
+        .populate({ path: 'assigneeId', model: User })
+        .populate({ path: 'createdById', model: User });
 
       if (!updated) {
         // Someone else updated this task in the meantime!
-        const latestDoc = await Task.findById(task._id).populate('assigneeId').populate('createdById');
+        const latestDoc = await Task.findById(task._id)
+          .populate({ path: 'assigneeId', model: User })
+          .populate({ path: 'createdById', model: User });
         if (!latestDoc) throw new AppError(404, 'NOT_FOUND', 'Task was deleted by another user');
 
         const latestDto = await toTaskDto(latestDoc, actor, membershipRole);
@@ -413,6 +421,10 @@ router.delete('/tasks/:id', async (req, res, next) => {
     // Cascade delete comments per BR-10
     await Comment.deleteMany({ taskId: task._id });
     await Task.findByIdAndDelete(task._id);
+
+    // Mirror to pm_platform
+    await mirrorDeleteMany('comments', { taskId: task._id });
+    await mirrorDelete('tasks', task._id);
 
     return res.status(204).send();
   } catch (err) {

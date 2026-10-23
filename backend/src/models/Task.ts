@@ -1,15 +1,16 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import { Document, Schema, Types } from 'mongoose';
+import { tasksDb, mirrorSave, mirrorDelete } from '../db/connections.js';
 import { TaskPriority, TaskStatus } from '../types/index.js';
 
 export interface ITask extends Document {
   id: string;
-  projectId: mongoose.Types.ObjectId;
+  projectId: Types.ObjectId;
   title: string;
   description: string;
   status: TaskStatus;
   priority: TaskPriority;
-  assigneeId: mongoose.Types.ObjectId | null;
-  createdById: mongoose.Types.ObjectId;
+  assigneeId: Types.ObjectId | null;
+  createdById: Types.ObjectId;
   dueDate: string | null;
   version: number;
   createdAt: Date;
@@ -18,7 +19,7 @@ export interface ITask extends Document {
 
 const TaskSchema = new Schema<ITask>(
   {
-    projectId: { type: Schema.Types.ObjectId, ref: 'Project', required: true, index: true },
+    projectId: { type: Schema.Types.ObjectId, required: true, index: true },
     title: { type: String, required: true, trim: true },
     description: { type: String, default: '' },
     status: {
@@ -32,8 +33,8 @@ const TaskSchema = new Schema<ITask>(
       enum: ['LOW', 'MEDIUM', 'HIGH', 'URGENT'],
       default: 'MEDIUM',
     },
-    assigneeId: { type: Schema.Types.ObjectId, ref: 'User', default: null, index: true },
-    createdById: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    assigneeId: { type: Schema.Types.ObjectId, default: null, index: true },
+    createdById: { type: Schema.Types.ObjectId, required: true },
     dueDate: { type: String, default: null },
     version: { type: Number, default: 1, required: true },
   },
@@ -51,4 +52,12 @@ const TaskSchema = new Schema<ITask>(
   }
 );
 
-export const Task = mongoose.model<ITask>('Task', TaskSchema);
+TaskSchema.post('save', async function (doc) {
+  await mirrorSave('tasks', doc);
+});
+
+TaskSchema.post('findOneAndDelete', async function (doc) {
+  if (doc) await mirrorDelete('tasks', doc._id);
+});
+
+export const Task = tasksDb.model<ITask>('Task', TaskSchema);

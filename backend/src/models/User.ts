@@ -1,4 +1,5 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import { Document, Schema } from 'mongoose';
+import { usersDb, mirrorSave, mirrorDelete } from '../db/connections.js';
 import { GlobalRole } from '../types/index.js';
 
 export interface IUser extends Document {
@@ -39,4 +40,12 @@ const UserSchema = new Schema<IUser>(
   }
 );
 
-export const User = mongoose.model<IUser>('User', UserSchema);
+UserSchema.post('save', async function (doc) {
+  await mirrorSave('users', doc);
+});
+
+UserSchema.post('findOneAndDelete', async function (doc) {
+  if (doc) await mirrorDelete('users', doc._id);
+});
+
+export const User = usersDb.model<IUser>('User', UserSchema);

@@ -1,4 +1,5 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import { Document, Schema, Types } from 'mongoose';
+import { projectsDb, mirrorSave, mirrorDelete } from '../db/connections.js';
 import { ProjectStatus } from '../types/index.js';
 
 export interface IProject extends Document {
@@ -6,7 +7,7 @@ export interface IProject extends Document {
   name: string;
   description: string;
   status: ProjectStatus;
-  createdById: mongoose.Types.ObjectId;
+  createdById: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -20,7 +21,7 @@ const ProjectSchema = new Schema<IProject>(
       enum: ['ACTIVE', 'ARCHIVED'],
       default: 'ACTIVE',
     },
-    createdById: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    createdById: { type: Schema.Types.ObjectId, required: true },
   },
   {
     timestamps: true,
@@ -36,4 +37,12 @@ const ProjectSchema = new Schema<IProject>(
   }
 );
 
-export const Project = mongoose.model<IProject>('Project', ProjectSchema);
+ProjectSchema.post('save', async function (doc) {
+  await mirrorSave('projects', doc);
+});
+
+ProjectSchema.post('findOneAndDelete', async function (doc) {
+  if (doc) await mirrorDelete('projects', doc._id);
+});
+
+export const Project = projectsDb.model<IProject>('Project', ProjectSchema);

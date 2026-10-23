@@ -1,17 +1,18 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import { Document, Schema, Types } from 'mongoose';
+import { tasksDb, mirrorSave, mirrorDelete } from '../db/connections.js';
 
 export interface IComment extends Document {
   id: string;
-  taskId: mongoose.Types.ObjectId;
-  authorId: mongoose.Types.ObjectId;
+  taskId: Types.ObjectId;
+  authorId: Types.ObjectId;
   body: string;
   createdAt: Date;
 }
 
 const CommentSchema = new Schema<IComment>(
   {
-    taskId: { type: Schema.Types.ObjectId, ref: 'Task', required: true, index: true },
-    authorId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    taskId: { type: Schema.Types.ObjectId, required: true, index: true },
+    authorId: { type: Schema.Types.ObjectId, required: true },
     body: { type: String, required: true, trim: true },
     createdAt: { type: Date, default: Date.now, index: true },
   },
@@ -28,4 +29,12 @@ const CommentSchema = new Schema<IComment>(
   }
 );
 
-export const Comment = mongoose.model<IComment>('Comment', CommentSchema);
+CommentSchema.post('save', async function (doc) {
+  await mirrorSave('comments', doc);
+});
+
+CommentSchema.post('findOneAndDelete', async function (doc) {
+  if (doc) await mirrorDelete('comments', doc._id);
+});
+
+export const Comment = tasksDb.model<IComment>('Comment', CommentSchema);

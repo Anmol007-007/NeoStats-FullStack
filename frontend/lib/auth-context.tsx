@@ -40,6 +40,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password: string) => {
     try {
       const res = await api.auth.login({ email, password });
+      if ((res as any).token) {
+        localStorage.setItem('taskflow_token', (res as any).token);
+      }
       setUser(res.data);
       toast.success(`Welcome back, ${res.data.name}!`);
       router.push('/dashboard');
@@ -57,6 +60,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signup = async (name: string, email: string, password: string, role?: string) => {
     try {
       const res = await api.auth.signup({ name, email, password, role });
+      if ((res as any).token) {
+        localStorage.setItem('taskflow_token', (res as any).token);
+      }
       setUser(res.data);
       toast.success(`Account created! Welcome to TaskFlow, ${res.data.name}!`);
       router.push('/dashboard');
@@ -73,10 +79,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     try {
+      localStorage.removeItem('taskflow_token');
       await api.auth.logout();
     } catch {
       // Even if logout endpoint fails, clear state
     } finally {
+      localStorage.removeItem('taskflow_token');
       setUser(null);
       toast.info('Logged out successfully');
       router.push('/login');
