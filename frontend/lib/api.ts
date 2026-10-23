@@ -19,8 +19,8 @@ import { mockStore } from './mock-store';
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
 
-// Prototype mode is enabled by default so the frontend works immediately as a runnable prototype!
-const IS_PROTOTYPE_MODE = true;
+// Connect directly to live Express backend with MongoDB
+const IS_PROTOTYPE_MODE = process.env.NEXT_PUBLIC_ENABLE_MOCK === 'true';
 
 export class ApiError extends Error {
   status: number;
