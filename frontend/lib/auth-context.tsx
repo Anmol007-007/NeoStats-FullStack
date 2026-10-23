@@ -10,6 +10,7 @@ interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<User>;
+  signup: (name: string, email: string, password: string, role?: string) => Promise<User>;
   logout: () => Promise<void>;
   refetchUser: () => Promise<void>;
 }
@@ -53,6 +54,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const signup = async (name: string, email: string, password: string, role?: string) => {
+    try {
+      const res = await api.auth.signup({ name, email, password, role });
+      setUser(res.data);
+      toast.success(`Account created! Welcome to TaskFlow, ${res.data.name}!`);
+      router.push('/dashboard');
+      return res.data;
+    } catch (err) {
+      if (err instanceof ApiError) {
+        toast.error(err.message || 'Signup failed');
+      } else {
+        toast.error('An unexpected error occurred during signup');
+      }
+      throw err;
+    }
+  };
+
   const logout = async () => {
     try {
       await api.auth.logout();
@@ -75,6 +93,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user,
         isLoading,
         login,
+        signup,
         logout,
         refetchUser,
       }}

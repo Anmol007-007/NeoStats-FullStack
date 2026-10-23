@@ -5,7 +5,18 @@ import { useAuth } from '@/lib/auth-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import { Layers, Shield, UserCheck, Users, Eye, Lock, Mail, ArrowRight } from 'lucide-react';
+import {
+  Layers,
+  Shield,
+  UserCheck,
+  Users,
+  Eye,
+  Lock,
+  Mail,
+  ArrowRight,
+  UserX,
+  AlertCircle,
+} from 'lucide-react';
 
 const DEMO_ACCOUNTS = [
   {
@@ -44,30 +55,67 @@ const DEMO_ACCOUNTS = [
     color: 'hover:border-slate-300 hover:bg-slate-50 text-slate-700',
     badge: 'bg-slate-100 text-slate-700 border-slate-200',
   },
+  {
+    role: 'INACTIVE',
+    name: 'Ian Inactive',
+    email: 'inactive@example.com',
+    password: 'Password@123',
+    icon: UserX,
+    color: 'hover:border-rose-300 hover:bg-rose-50/50 text-rose-700',
+    badge: 'bg-rose-100 text-rose-700 border-rose-200',
+  },
 ];
 
 export default function LoginPage() {
-  const { login } = useAuth();
+  const { login, signup } = useAuth();
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [role, setRole] = useState<'TEAM_MEMBER' | 'PROJECT_MANAGER' | 'VIEWER'>('TEAM_MEMBER');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) return;
-    setIsLoading(true);
-    try {
-      await login(email, password);
-    } catch {
-      // Error handled in login method
-    } finally {
-      setIsLoading(false);
+    setErrorMessage(null);
+
+    if (isSignUp) {
+      if (!name.trim() || !email.trim() || !password) return;
+      if (password.length < 8) {
+        setErrorMessage('Password must be at least 8 characters long');
+        return;
+      }
+      setIsLoading(true);
+      try {
+        await signup(name.trim(), email.trim(), password, role);
+      } catch (err: any) {
+        setErrorMessage(
+          err?.message || 'Registration failed. An account with this email may already exist.'
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    } else {
+      if (!email.trim() || !password) return;
+      setIsLoading(true);
+      try {
+        await login(email.trim(), password);
+      } catch (err: any) {
+        setErrorMessage(
+          err?.message || 'Your account has been deactivated. Contact an administrator.'
+        );
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
   const handleQuickLogin = (demoEmail: string, demoPass: string) => {
+    setIsSignUp(false);
     setEmail(demoEmail);
     setPassword(demoPass);
+    setErrorMessage(null);
   };
 
   return (
@@ -79,17 +127,84 @@ export default function LoginPage() {
             <Layers className="h-6 w-6" />
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-            Welcome to TaskFlow
+            {isSignUp ? 'Create your Account' : 'Welcome to TaskFlow'}
           </h1>
           <p className="text-xs text-slate-500 max-w-xs mx-auto">
-            High-performance collaborative project management with optimistic locking & RBAC.
+            {isSignUp
+              ? 'Join your team and start managing projects with real-time locking.'
+              : 'High-performance collaborative project management with optimistic locking & RBAC.'}
           </p>
         </div>
 
-        {/* Login form card */}
+        {/* Form card */}
         <Card className="border border-slate-200/90 shadow-xl shadow-slate-200/50 backdrop-blur-md">
           <CardContent className="pt-6">
+            {/* Mode Switcher Tabs */}
+            <div className="flex bg-slate-100 p-1 rounded-xl mb-5 border border-slate-200/80">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsSignUp(false);
+                  setErrorMessage(null);
+                }}
+                className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                  !isSignUp
+                    ? 'bg-white text-slate-900 shadow-xs'
+                    : 'text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                Sign In
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsSignUp(true);
+                  setErrorMessage(null);
+                }}
+                className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                  isSignUp
+                    ? 'bg-white text-slate-900 shadow-xs'
+                    : 'text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                Sign Up
+              </button>
+            </div>
+
             <form onSubmit={handleSubmit} className="space-y-4">
+              {errorMessage && (
+                <div
+                  role="alert"
+                  data-testid="error-message"
+                  className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-xs text-rose-700 flex items-start gap-2.5 animate-in fade-in"
+                >
+                  <AlertCircle className="h-4 w-4 shrink-0 text-rose-500 mt-0.5" />
+                  <div>
+                    <p className="font-semibold text-rose-800">
+                      {isSignUp ? 'Registration Error' : 'Account Access Denied'}
+                    </p>
+                    <p className="text-rose-600">{errorMessage}</p>
+                  </div>
+                </div>
+              )}
+
+              {isSignUp && (
+                <div>
+                  <Input
+                    label="Full Name"
+                    type="text"
+                    required
+                    placeholder="e.g. John Doe"
+                    value={name}
+                    onChange={(e) => {
+                      setName(e.target.value);
+                      if (errorMessage) setErrorMessage(null);
+                    }}
+                    autoComplete="name"
+                  />
+                </div>
+              )}
+
               <div>
                 <Input
                   label="Email Address"
@@ -97,7 +212,10 @@ export default function LoginPage() {
                   required
                   placeholder="name@example.com"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (errorMessage) setErrorMessage(null);
+                  }}
                   autoComplete="email"
                 />
               </div>
@@ -107,24 +225,72 @@ export default function LoginPage() {
                   label="Password"
                   type="password"
                   required
-                  placeholder="••••••••"
+                  placeholder={isSignUp ? 'At least 8 characters' : '••••••••'}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  autoComplete="current-password"
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (errorMessage) setErrorMessage(null);
+                  }}
+                  autoComplete={isSignUp ? 'new-password' : 'current-password'}
                 />
+                {isSignUp && (
+                  <p className="text-[10px] text-slate-400 mt-1">Must be at least 8 characters</p>
+                )}
               </div>
+
+              {isSignUp && (
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-slate-700">Initial Role</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { key: 'TEAM_MEMBER', label: 'Team Member' },
+                      { key: 'PROJECT_MANAGER', label: 'Project Mgr' },
+                      { key: 'VIEWER', label: 'Viewer' },
+                    ].map((item) => (
+                      <button
+                        key={item.key}
+                        type="button"
+                        onClick={() => setRole(item.key as any)}
+                        className={`py-1.5 px-2 text-[11px] font-medium rounded-lg border transition-all text-center ${
+                          role === item.key
+                            ? 'bg-teal-50 border-teal-500 text-teal-800 font-semibold'
+                            : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                        }`}
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <Button
                 type="submit"
                 variant="teal"
                 size="lg"
-                className="w-full text-sm font-semibold tracking-wide shadow-md shadow-teal-600/20"
+                className="w-full text-sm font-semibold tracking-wide shadow-md shadow-teal-600/20 mt-2"
                 isLoading={isLoading}
               >
-                Sign In
+                {isSignUp ? 'Create Account' : 'Sign In'}
                 <ArrowRight className="h-4 w-4 ml-1.5" />
               </Button>
             </form>
+
+            <div className="mt-4 pt-3 border-t border-slate-100 text-center">
+              <p className="text-xs text-slate-500">
+                {isSignUp ? 'Already have an account? ' : "Don't have an account yet? "}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsSignUp(!isSignUp);
+                    setErrorMessage(null);
+                  }}
+                  className="font-semibold text-teal-600 hover:text-teal-700 hover:underline cursor-pointer"
+                >
+                  {isSignUp ? 'Sign In' : 'Sign up now'}
+                </button>
+              </p>
+            </div>
           </CardContent>
         </Card>
 
@@ -139,20 +305,22 @@ export default function LoginPage() {
           </div>
 
           <div className="grid grid-cols-2 gap-2.5">
-            {DEMO_ACCOUNTS.map((acc) => {
+            {DEMO_ACCOUNTS.map((acc, idx) => {
               const Icon = acc.icon;
+              const isFullWidth = idx === DEMO_ACCOUNTS.length - 1 && DEMO_ACCOUNTS.length % 2 !== 0;
               return (
                 <button
                   key={acc.role}
                   type="button"
+                  data-testid={`preset-${acc.role.toLowerCase()}`}
                   onClick={() => handleQuickLogin(acc.email, acc.password)}
-                  className={`p-3 rounded-xl border border-slate-200 bg-white text-left transition-all hover:shadow-xs flex flex-col gap-1 cursor-pointer group ${acc.color}`}
+                  className={`p-3 rounded-xl border border-slate-200 bg-white text-left transition-all hover:shadow-xs flex flex-col gap-1 cursor-pointer group ${acc.color} ${isFullWidth ? 'col-span-2' : ''}`}
                 >
                   <div className="flex items-center justify-between">
                     <span
                       className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border ${acc.badge}`}
                     >
-                      {acc.role.replace('_', ' ')}
+                      {acc.role === 'INACTIVE' ? 'INACTIVE (TEST)' : acc.role.replace('_', ' ')}
                     </span>
                     <Icon className="h-3.5 w-3.5 opacity-60 group-hover:opacity-100 transition-opacity" />
                   </div>

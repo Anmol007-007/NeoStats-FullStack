@@ -62,6 +62,54 @@ router.post(
   }
 );
 
+// POST /auth/signup (and /auth/register)
+router.post(
+  ['/signup', '/register'],
+  validate({
+    body: z.object({
+      name: z.string().min(1, 'Name is required').max(100).trim(),
+      email: z.string().email('Invalid email address').trim().toLowerCase(),
+      password: z.string().min(8, 'Password must be at least 8 characters'),
+      role: z.enum(['ADMIN', 'PROJECT_MANAGER', 'TEAM_MEMBER', 'VIEWER']).optional(),
+    }),
+  }),
+  async (req, res, next) => {
+    try {
+      const { name, email, password, role } = req.body;
+      const existing = await User.findOne({ email });
+      if (existing) {
+        throw new AppError(409, 'EMAIL_TAKEN', 'An account with this email already exists');
+      }
+
+      const passwordHash = await bcrypt.hash(password, 10);
+      const user = await User.create({
+        name,
+        email,
+        passwordHash,
+        role: role || 'TEAM_MEMBER',
+        isActive: true,
+      });
+
+      const token = jwt.sign(
+        { id: user.id, email: user.email, role: user.role },
+        JWT_SECRET,
+        { expiresIn: '7d' }
+      );
+
+      res.cookie('token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+
+      return res.status(201).json({ data: user.toJSON() });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
 // POST /auth/logout
 router.post('/logout', (_req, res) => {
   res.clearCookie('token');

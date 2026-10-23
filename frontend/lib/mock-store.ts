@@ -103,6 +103,27 @@ class MockStore {
     this.save();
   }
 
+  signup(data: { name: string; email: string; password: string; role?: string }): User {
+    const existing = this.users.find(
+      (u) => u.email.toLowerCase() === data.email.toLowerCase()
+    );
+    if (existing) {
+      throw new ApiError(409, 'EMAIL_TAKEN', 'An account with this email already exists');
+    }
+    const newUser: User = {
+      id: `u-${Date.now()}`,
+      name: data.name,
+      email: data.email.toLowerCase(),
+      role: (data.role as GlobalRole) || 'TEAM_MEMBER',
+      isActive: true,
+      createdAt: new Date().toISOString(),
+    };
+    this.users.push(newUser);
+    this.currentUserId = newUser.id;
+    this.save();
+    return newUser;
+  }
+
   updateProfile(name: string): User {
     const user = this.getCurrentUser();
     if (!user) throw new ApiError(401, 'UNAUTHENTICATED', 'Not authenticated');

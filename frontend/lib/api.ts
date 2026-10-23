@@ -145,6 +145,16 @@ export const api = {
         body: JSON.stringify(credentials),
       });
     },
+    signup: async (data: { name: string; email: string; password: string; role?: string }) => {
+      if (IS_PROTOTYPE_MODE) {
+        const user = mockStore.signup(data);
+        return { data: user };
+      }
+      return apiRequest<ApiDataResponse<User>>('/auth/signup', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+    },
     logout: async () => {
       if (IS_PROTOTYPE_MODE) {
         mockStore.logout();
